@@ -28,10 +28,12 @@ The plugin isn't on WordPress.org yet, so you download it from GitHub:
 2. Choose the zip you downloaded and click **Install Now**.
 3. Click **Activate Plugin**.
 
+**Multisite:** WebLLM's settings are per site. On each site that uses AI, open that site's **Settings → WebLLM**, choose a model and turn on the worker.
+
 ## 3. Choose a model and turn on the worker
 
 1. Go to **Settings → WebLLM**.
-2. Pick a **Model**. The list comes from WebLLM's catalogue, smallest first. Start with a small one (around 1 billion parameters); you can switch later.
+2. Pick a **Model**. The list comes from WebLLM's catalogue and shows each model's download size. **Start with a small one, around 1 GB or less** (for example a 0.5B–1B model such as Qwen2.5-0.5B-Instruct or Llama-3.2-1B-Instruct). The default, Qwen3.5-4B (about 3.8 GB), gives better answers but takes much longer to download and load, and needs a powerful computer. You can switch later.
 3. Turn on **In-browser worker**. Most plugins start their AI requests on your server; the worker lets an open dashboard tab answer them.
 4. Click **Save Changes**.
 
@@ -48,6 +50,7 @@ The first time a model is used, your browser downloads it. Keep the tab open unt
 ## How it behaves
 
 - **Keep a dashboard tab open** while you use AI features. With no tab open, there's no browser to run the model, and requests wait and then time out.
+- **Wait for “ready”.** The model loads into each dashboard page you open (from the browser's cache after the first time). Calls made before it finishes fail with *No WebLLM worker is connected for model …*; try again once **WebLLM worker: ready** shows. Small models load in seconds.
 - **No background AI.** Scheduled tasks (cron) and WP-CLI have no browser, so AI calls that plugins make in the background fail while WebLLM is the provider. Gatehouse logs them as failed, so you can see which plugins do this.
 - **Budgets and costs.** Local calls cost $0, so they never use up a budget or show as unpriced. Pausing a plugin still stops its calls.
 - **Speed depends on your computer.** A laptop with a recent graphics chip answers a short brief in seconds; older machines take longer. Smaller models help.
@@ -60,6 +63,7 @@ The first time a model is used, your browser downloads it. Keep the tab open unt
 | *unavailable — WebGPU is not available* | Use a recent Chrome or Edge on a desktop computer, and make sure hardware acceleration is on in the browser's settings. |
 | *error: …* while loading a model | The download was interrupted or the device ran out of memory. Reload the page, or choose a smaller model. |
 | Gatehouse still says no provider is connected | Check that the plugin is **active**, a model is saved, and **In-browser worker** is on. Then reload the Gatehouse screen. |
+| *No WebLLM worker is connected for model …* | The model is still downloading or loading. Stay on the page until **Settings → WebLLM** shows *WebLLM worker: ready*, then retry. If it never gets there, choose a smaller model. On multisite, set up WebLLM on the site you're using. |
 | Requests time out | Keep a dashboard tab open and wait for *WebLLM worker: ready*. Very slow devices may need a smaller model. |
 
 For problems with WebLLM itself, see the project's [support page](https://github.com/ProgressPlanner/ai-provider-for-webllm/blob/main/SUPPORT.md).
