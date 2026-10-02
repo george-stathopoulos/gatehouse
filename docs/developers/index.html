@@ -16,9 +16,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../../assets/icon-256.png">
-<link rel="stylesheet" href="../../assets/site.css?v=1.5.0">
+<link rel="stylesheet" href="../../assets/site.css?v=2.0.0">
 <script>try{var t=localStorage.getItem('gatehouse-site-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
-<script src="../../assets/search-index.js?v=1.5.0" defer></script>
+<script src="../../assets/search-index.js?v=2.0.0" defer></script>
 </head>
 <body data-root="../../">
 <a class="skip" href="#main">Skip to content</a>
@@ -28,15 +28,13 @@
 		<nav id="site-nav" class="nav" aria-label="Main">
 			<a href="../../index.html#features">Features</a>
 			<a href="../../index.html#how">How it works</a>
-			<a href="../../index.html#pricing">Pricing</a>
 			<a href="../../demo/">Live demo</a>
-			<a href="../../pro/">Pro</a>
 			<a href="../../trust/">Privacy & security</a>
 			<a href="../../docs/" aria-current="page">Help center</a>
 		</nav>
 		<div class="head-actions">
 			<button class="icon-btn" type="button" data-theme-toggle aria-label="Dark theme" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
-			<a class="btn btn-primary btn-sm" href="../../downloads/gatehouse.zip" download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download free</a>
+			<a class="btn btn-primary btn-sm" href="https://github.com/george-stathopoulos/gatehouse/releases/latest"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download</a>
 			<button class="icon-btn menu-btn" type="button" data-menu-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 		</div>
 	</div>
@@ -54,15 +52,16 @@
 		<summary class="docs-nav-toggle">Browse all guides</summary>
 		<ul><li><a href="../">Help center home</a></li></ul>
 		<h2>Start here</h2><ul><li><a href="../getting-started/">Getting started</a></li></ul>
-		<h2>Using Gatehouse</h2><ul><li><a href="../overview/">Overview</a></li><li><a href="../sources-and-budgets/">Sources and budgets</a></li><li><a href="../requests/">Requests</a></li><li><a href="../privacy/">Privacy and redaction</a></li><li><a href="../brand-brief/">Brand brief</a></li><li><a href="../settings/">Settings</a></li><li><a href="../pro/">Pro: response caching</a></li></ul>
-		<h2>Reference</h2><ul><li><a href="../costs-and-pricing/">How costs are calculated</a></li><li><a href="../local-ai/">Private AI with WebLLM</a></li><li><a href="../data/">Your data</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../troubleshooting/">Troubleshooting</a></li><li><a href="../developers/" aria-current="page">For developers</a></li></ul>
+		<h2>Using Gatehouse</h2><ul><li><a href="../overview/">Overview</a></li><li><a href="../sources-and-budgets/">Sources and budgets</a></li><li><a href="../requests/">Requests</a></li><li><a href="../privacy/">Privacy</a></li><li><a href="../settings/">Settings</a></li></ul>
+		<h2>Reference</h2><ul><li><a href="../costs-and-pricing/">How costs are calculated</a></li><li><a href="../local-ai/">Local AI with WebLLM</a></li><li><a href="../data/">Your data</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../troubleshooting/">Troubleshooting</a></li><li><a href="../developers/" aria-current="page">For developers</a></li></ul>
 	</details>
 </aside>
 <article class="doc">
 	<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Help center</a> › For developers</nav>
 	<h1 id="for-developers">For developers</h1>
 <h2 id="how-gatehouse-works">How Gatehouse works<a class="anchor" href="#how-gatehouse-works" aria-label="Link to this section">#</a></h2>
-<p>Gatehouse does not wrap or replace AI provider plugins. It uses hooks from the WordPress 7.0 AI Client and the standard HTTP API:</p>
+<p>Gatehouse does not wrap or replace AI provider plugins. It uses hooks from the WordPress 7.0 AI Client and the standard HTTP API.</p>
+<p><strong>Calls through the WordPress AI Client:</strong></p>
 <table tabindex="0">
 <thead>
 <tr>
@@ -75,22 +74,22 @@
 <tr>
 <td>1</td>
 <td><code>wp_ai_client_prevent_prompt</code> (filter)</td>
-<td>Works out which plugin or theme is calling, from the call stack. Returns <code>true</code> to block the call if the source is paused, or a budget is reached.</td>
+<td>Works out which plugin or theme is calling, from the call stack. Returns <code>true</code> to block the call if the source is paused, over its hourly limit, or a budget is reached.</td>
 </tr>
 <tr>
 <td>2</td>
 <td><code>wp_ai_client_before_generate_result</code> (action)</td>
-<td>Starts the timer.</td>
+<td>Starts the timer and marks a generation in flight.</td>
 </tr>
 <tr>
 <td>3</td>
 <td><code>http_request_args</code> (filter)</td>
-<td>For POST requests to a known provider host: redacts personal data in the JSON body and adds the brand brief to the system instructions.</td>
+<td>For POST requests to a known provider host: checks the JSON body for personal data. Replaces it only if the source's policy has <code>redact</code> on.</td>
 </tr>
 <tr>
 <td>4</td>
 <td><code>http_response</code> (filter)</td>
-<td>Puts the redacted values back into the provider's response body.</td>
+<td>Puts replaced values back into the provider's response body.</td>
 </tr>
 <tr>
 <td>5</td>
@@ -104,13 +103,46 @@
 </tr>
 </tbody>
 </table>
+<p><strong>Direct calls</strong> (a plugin calling a provider with its own key through the WordPress HTTP API, with no AI Client generation in flight):</p>
+<table tabindex="0">
+<thead>
+<tr>
+<th>Step</th>
+<th>Hook</th>
+<th>What Gatehouse does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>http_request_args</code> (filter)</td>
+<td>For text generation requests to a known provider host: attributes the call from the call stack, checks it for personal data and redacts if the policy says so.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>pre_http_request</code> (filter, priority 7)</td>
+<td>Returns a <code>WP_Error</code> (<code>gatehouse_blocked</code>) if the source is paused, over its hourly limit or over a budget. Nothing is sent.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>http_response</code> (filter, priority 6)</td>
+<td>Records model and token usage from the answer (plain JSON or a streamed body), with the estimated cost.</td>
+</tr>
+<tr>
+<td>—</td>
+<td><code>http_api_debug</code> (action)</td>
+<td>Records provider errors.</td>
+</tr>
+</tbody>
+</table>
+<p>When a plugin reads a streamed answer itself (for example with its own <code>CURLOPT_WRITEFUNCTION</code>), the body WordPress hands back is empty, so the call is logged without tokens or cost, with a note. Calls made with other HTTP libraries, or from the browser, aren't visible.</p>
 <p>Notes:</p>
 <ul>
 <li><strong>Blocked <code>is_supported_*()</code> checks are not logged.</strong> When a source is blocked, <code>wp_ai_client_prompt()-&gt;is_supported_*()</code> returns <code>false</code> silently, so plugins can hide their AI features without filling the log.</li>
 <li><strong>Where the code lives:</strong>
 <ul>
 <li><code>includes/class-gateway.php</code>: the hooks;</li>
-<li><code>includes/class-redactor.php</code>: redaction;</li>
+<li><code>includes/class-redactor.php</code>: personal data detection and redaction;</li>
 <li><code>includes/class-provider-adapters.php</code>: provider request formats;</li>
 <li><code>includes/class-ledger.php</code>: storage and monthly totals;</li>
 <li><code>includes/class-stats.php</code>: dashboard numbers.</li>
@@ -119,7 +151,7 @@
 </ul>
 <h2 id="filters-and-actions">Filters and actions<a class="anchor" href="#filters-and-actions" aria-label="Link to this section">#</a></h2>
 <h3 id="gatehouse_provider_hosts"><code>gatehouse_provider_hosts</code><a class="anchor" href="#gatehouse_provider_hosts" aria-label="Link to this section">#</a></h3>
-<p>Maps API hosts to provider IDs. Requests to these hosts are redacted, and text-generation requests get the brand brief.</p>
+<p>Maps API hosts to provider IDs. Requests to these hosts are checked for personal data, and text-generation requests made directly by plugins are recorded and can be blocked. Defaults: <code>api.anthropic.com</code>, <code>api.openai.com</code>, <code>generativelanguage.googleapis.com</code>, <code>openrouter.ai</code>, <code>api.x.ai</code>, <code>api.mistral.ai</code>, <code>api.deepseek.com</code>, <code>api.groq.com</code>, <code>api.perplexity.ai</code>.</p>
 <pre tabindex="0"><code class="language-php">add_filter( 'gatehouse_provider_hosts', function ( $hosts ) {
 	$hosts['llm.internal.example.com'] = 'self-hosted';
 	return $hosts;
@@ -128,8 +160,8 @@
 <h3 id="adding-a-provider">Adding a provider<a class="anchor" href="#adding-a-provider" aria-label="Link to this section">#</a></h3>
 <p>Add its host with <code>gatehouse_provider_hosts</code>, as above.</p>
 <ul>
-<li><strong>Redaction</strong> applies to every POST request to that host, except model listings (paths ending in <code>/models</code>).</li>
-<li><strong>The brand brief</strong> is added when the URL path matches one of these formats:</li>
+<li><strong>Detection and redaction</strong> apply to every POST request to that host, except model listings (paths ending in <code>/models</code>).</li>
+<li><strong>Direct calls</strong> are recorded, and can be blocked, when the URL path matches one of these text generation formats:</li>
 </ul>
 <table tabindex="0">
 <thead>
@@ -174,7 +206,9 @@
 } );
 </code></pre>
 <h3 id="gatehouse_record_row-filter"><code>gatehouse_record_row</code> (filter)<a class="anchor" href="#gatehouse_record_row-filter" aria-label="Link to this section">#</a></h3>
-<p>Adjusts a call's row just before it is saved. Gatehouse Pro uses it to mark cached calls: <code>cached</code> = 1, the cost moved into <code>saved</code>, and <code>cost</code> = 0.</p>
+<p>Adjusts a call's row just before it is saved, for example to mark a call answered from your own cache: <code>cached</code> = 1, the cost moved into <code>saved</code>, and <code>cost</code> = 0. Cached calls show as &quot;From cache&quot; in the dashboard.</p>
+<h3 id="gatehouse_local_providers-filter"><code>gatehouse_local_providers</code> (filter)<a class="anchor" href="#gatehouse_local_providers-filter" aria-label="Link to this section">#</a></h3>
+<p>Provider IDs whose calls cost nothing because the model runs locally. Defaults to <code>webllm</code>.</p>
 <h3 id="gatehouse_admin_enqueue-action-and-windowgatehouse"><code>gatehouse_admin_enqueue</code> (action) and <code>window.gatehouse</code><a class="anchor" href="#gatehouse_admin_enqueue-action-and-windowgatehouse" aria-label="Link to this section">#</a></h3>
 <p>Fires after the dashboard script is enqueued. Pass the handle (<code>gatehouse-admin</code>) as a dependency of your own script.</p>
 <ul>
@@ -187,8 +221,8 @@ addFilter( 'gatehouse.routes', 'my-addon', ( routes ) =&gt; [
 	{ id: 'my-page', label: 'My page', icon: 'spark', Page: MyPage },
 ] );
 </code></pre>
-<h3 id="gatehouse_pro_active-and-gatehouse_pro_url-filters"><code>gatehouse_pro_active</code> and <code>gatehouse_pro_url</code> (filters)<a class="anchor" href="#gatehouse_pro_active-and-gatehouse_pro_url-filters" aria-label="Link to this section">#</a></h3>
-<p><code>gatehouse_pro_active</code> tells the dashboard a caching add-on is installed. <code>gatehouse_pro_url</code> sets the link on the repeated-requests card; when it is empty, no link is shown.</p>
+<h3 id="gatehouse_pro_active-filter"><code>gatehouse_pro_active</code> (filter)<a class="anchor" href="#gatehouse_pro_active-filter" aria-label="Link to this section">#</a></h3>
+<p>Tells the dashboard that an add-on providing response caching is active.</p>
 <h3 id="gatehouse_connector_approval_active-gatehouse_docs_url-gatehouse_support_url-filters"><code>gatehouse_connector_approval_active</code>, <code>gatehouse_docs_url</code>, <code>gatehouse_support_url</code> (filters)<a class="anchor" href="#gatehouse_connector_approval_active-gatehouse_docs_url-gatehouse_support_url-filters" aria-label="Link to this section">#</a></h3>
 <ul>
 <li><code>gatehouse_connector_approval_active</code> overrides the detection of the AI plugin's Connector Approval feature.</li>
@@ -215,7 +249,8 @@ addFilter( 'gatehouse.routes', 'my-addon', ( routes ) =&gt; [
 <ul>
 <li><code>created_at</code>, <code>source</code>, <code>user_id</code>, <code>provider</code>, <code>model</code>, <code>capability</code>, <code>status</code> (<code>ok</code>, <code>blocked</code> or <code>error</code>);</li>
 <li><code>input_tokens</code>, <code>output_tokens</code>, <code>cost</code>, <code>priced</code>, <code>latency_ms</code>;</li>
-<li><code>redactions</code>, <code>brief</code>, <code>note</code>, <code>prompt_excerpt</code>, <code>response_excerpt</code>.</li>
+<li><code>channel</code> (<code>ai_client</code> or <code>direct</code>), <code>pii</code> (kinds and counts found, for example <code>email:2,phone:1</code>), <code>redactions</code> (items replaced);</li>
+<li><code>note</code>, <code>prompt_excerpt</code>, <code>response_excerpt</code>.</li>
 </ul>
 <h2 id="source-ids">Source IDs<a class="anchor" href="#source-ids" aria-label="Link to this section">#</a></h2>
 <p>Sources are identified as <code>type:slug</code>:</p>
@@ -292,12 +327,17 @@ addFilter( 'gatehouse.routes', 'my-addon', ( routes ) =&gt; [
 <tr>
 <td>POST</td>
 <td><code>/sources</code></td>
-<td>Update one source's policy: <code>{ &quot;source&quot;: &quot;plugin:x&quot;, &quot;policy&quot;: { &quot;budget&quot;: 10, &quot;paused&quot;: false, &quot;skip_brief&quot;: false, &quot;skip_redaction&quot;: false } }</code></td>
+<td>Update one source's policy: <code>{ &quot;source&quot;: &quot;plugin:x&quot;, &quot;policy&quot;: { &quot;budget&quot;: 10, &quot;rate_limit&quot;: 300, &quot;paused&quot;: false, &quot;redact&quot;: false } }</code></td>
 </tr>
 <tr>
 <td>GET</td>
-<td><code>/requests?page=1&amp;per_page=25&amp;source=&amp;status=&amp;model=&amp;redacted=</code></td>
+<td><code>/requests?page=1&amp;per_page=25&amp;source=&amp;status=&amp;model=&amp;pii=</code></td>
 <td>The request log, plus the source and model lists for the filters</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/data-map?days=90</code></td>
+<td>The AI data map: per source, providers, models, routes, volume, cost, personal data found and controls</td>
 </tr>
 <tr>
 <td>DELETE</td>
@@ -327,9 +367,7 @@ npm run lint:js
   --mount=.:/wordpress/wp-content/plugins/gatehouse \
   --blueprint=dev/blueprint.json --login
 </code></pre>
-<p><strong>Integration tests.</strong> These run in a throwaway WordPress, with the real Anthropic provider plugin talking to a mock API:</p>
-<pre tabindex="0"><code class="language-bash">tests/run.sh
-</code></pre>
+<p><strong>Integration tests.</strong> <code>tests/run.sh</code> runs them in a throwaway WordPress, with the real Anthropic provider plugin talking to a mock API. Note: parts of the suite still describe the 1.x behaviour (brand brief, redaction on by default) and need updating before they pass.</p>
 <p><strong>Documentation screenshots.</strong> Run with the local site above running; uses your installed Chrome:</p>
 <pre tabindex="0"><code class="language-bash">node dev/screenshots.mjs
 </code></pre>
@@ -347,8 +385,9 @@ npm run lint:js
 </li>
 <li><strong>Bump the version</strong> in <code>gatehouse.php</code> (header and <code>GATEHOUSE_VERSION</code>) and in the <code>Stable tag</code> line of <code>readme.txt</code>.</li>
 <li><strong>Add a changelog entry</strong> in <code>readme.txt</code>. Mention the price review, for example &quot;Model prices checked 2026-12-01; added gpt-5.6&quot;.</li>
-<li><strong>Run <code>tests/run.sh</code>, <code>npm run lint:js</code> and the Plugin Check plugin</strong> against the zip.</li>
+<li><strong>Run <code>npm run lint:js</code> and the Plugin Check plugin</strong> against the zip (and <code>tests/run.sh</code> once it's updated).</li>
 <li><strong>Run <code>bin/build-zip.sh</code></strong>, and refresh the screenshots if the interface changed.</li>
+<li><strong>Publish a GitHub release</strong> with the zip attached, so the website's download button (which links to the latest release) serves it.</li>
 </ol>
 <p>Sites with automatic price updates stay current on their own. For everyone else, plan a release every few months that refreshes the built-in table. The dashboard warns users when built-in prices are more than 120 days old.</p>
 
@@ -366,15 +405,15 @@ npm run lint:js
 		<div class="foot-grid">
 			<div class="foot-about">
 				<a class="brand" href="../../"><span class="mark"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2a7 7 0 0 0-7 7v8a1 1 0 0 0 1 1h3v-6a3 3 0 0 1 6 0v6h3a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7Zm0 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg></span>Gatehouse</a>
-				<p>Cost, budget and privacy control for every AI call your WordPress site makes. Free and open source (GPL).</p>
+				<p>See what each plugin spends on AI, cap it, and see which plugins send personal data to AI providers. Free and open source (GPL).</p>
 			</div>
 			<div>
 				<h2>Product</h2>
 				<ul>
 					<li><a href="../../index.html#features">Features</a></li>
-					<li><a href="../../index.html#pricing">Pricing</a></li>
-					<li><a href="../../pro/">Gatehouse Pro</a></li>
+					<li><a href="../../demo/">Live demo</a></li>
 					<li><a href="../../changelog/">Changelog</a></li>
+					<li><a href="https://github.com/george-stathopoulos/gatehouse">Source code on GitHub</a></li>
 				</ul>
 			</div>
 			<div>
@@ -398,17 +437,17 @@ npm run lint:js
 				<ul>
 					<li><a href="../../trust/#privacy">Privacy</a></li>
 					<li><a href="../../trust/#security">Security</a></li>
-					<li><a href="../../trust/#compliance">GDPR</a></li>
+					<li><a href="../../trust/#compliance">Privacy laws</a></li>
 					<li><a href="../../trust/#accessibility">Accessibility</a></li>
 				</ul>
 			</div>
 		</div>
 		<div class="foot-bottom">
 			<span>Made with <span class="heart" role="img" aria-label="love">♥</span> by <a href="https://george-stathopoulos.github.io/">George Stathopoulos</a></span>
-			<span>Gatehouse 1.5.0 · This website uses no cookies and no tracking.</span>
+			<span>Gatehouse 2.0.0 · This website uses no cookies and no tracking.</span>
 		</div>
 	</div>
 </footer>
-<script src="../../assets/site.js?v=1.5.0" defer></script>
+<script src="../../assets/site.js?v=2.0.0" defer></script>
 </body>
 </html>

@@ -2016,3 +2016,12 @@ a.card .more {
 	object-fit: cover;
 	object-position: top left;
 }
+
+/* A limitation stated on the feature itself, not only in the docs. */
+.feature-text .note {
+	font-size: 14px;
+	color: var(--muted);
+	border-left: 3px solid var(--line, rgba(0, 0, 0, 0.12));
+	padding-left: 12px;
+	margin-top: 12px;
+}

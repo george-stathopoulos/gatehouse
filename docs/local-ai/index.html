@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Private AI with WebLLM · Gatehouse</title>
-<meta name="description" content="Free, private AI in your browser with AI Provider for WebLLM: download, install and check it works. Gatehouse help center.">
+<title>Local AI with WebLLM · Gatehouse</title>
+<meta name="description" content="Run a small AI model in your browser with AI Provider for WebLLM, for development sites and editor-side experiments: limits, setup and checks. Gatehouse help center.">
 <meta name="theme-color" content="#4a3aa7">
 <link rel="canonical" href="https://george-stathopoulos.github.io/gatehouse/docs/local-ai/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Gatehouse">
-<meta property="og:title" content="Private AI with WebLLM · Gatehouse">
-<meta property="og:description" content="Free, private AI in your browser with AI Provider for WebLLM: download, install and check it works. Gatehouse help center.">
+<meta property="og:title" content="Local AI with WebLLM · Gatehouse">
+<meta property="og:description" content="Run a small AI model in your browser with AI Provider for WebLLM, for development sites and editor-side experiments: limits, setup and checks. Gatehouse help center.">
 <meta property="og:url" content="https://george-stathopoulos.github.io/gatehouse/docs/local-ai/">
 <meta property="og:image" content="https://george-stathopoulos.github.io/gatehouse/assets/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../../assets/icon-256.png">
-<link rel="stylesheet" href="../../assets/site.css?v=1.5.0">
+<link rel="stylesheet" href="../../assets/site.css?v=2.0.0">
 <script>try{var t=localStorage.getItem('gatehouse-site-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
-<script src="../../assets/search-index.js?v=1.5.0" defer></script>
+<script src="../../assets/search-index.js?v=2.0.0" defer></script>
 </head>
 <body data-root="../../">
 <a class="skip" href="#main">Skip to content</a>
@@ -28,15 +28,13 @@
 		<nav id="site-nav" class="nav" aria-label="Main">
 			<a href="../../index.html#features">Features</a>
 			<a href="../../index.html#how">How it works</a>
-			<a href="../../index.html#pricing">Pricing</a>
 			<a href="../../demo/">Live demo</a>
-			<a href="../../pro/">Pro</a>
 			<a href="../../trust/">Privacy & security</a>
 			<a href="../../docs/" aria-current="page">Help center</a>
 		</nav>
 		<div class="head-actions">
 			<button class="icon-btn" type="button" data-theme-toggle aria-label="Dark theme" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
-			<a class="btn btn-primary btn-sm" href="../../downloads/gatehouse.zip" download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download free</a>
+			<a class="btn btn-primary btn-sm" href="https://github.com/george-stathopoulos/gatehouse/releases/latest"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download</a>
 			<button class="icon-btn menu-btn" type="button" data-menu-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 		</div>
 	</div>
@@ -54,17 +52,27 @@
 		<summary class="docs-nav-toggle">Browse all guides</summary>
 		<ul><li><a href="../">Help center home</a></li></ul>
 		<h2>Start here</h2><ul><li><a href="../getting-started/">Getting started</a></li></ul>
-		<h2>Using Gatehouse</h2><ul><li><a href="../overview/">Overview</a></li><li><a href="../sources-and-budgets/">Sources and budgets</a></li><li><a href="../requests/">Requests</a></li><li><a href="../privacy/">Privacy and redaction</a></li><li><a href="../brand-brief/">Brand brief</a></li><li><a href="../settings/">Settings</a></li><li><a href="../pro/">Pro: response caching</a></li></ul>
-		<h2>Reference</h2><ul><li><a href="../costs-and-pricing/">How costs are calculated</a></li><li><a href="../local-ai/" aria-current="page">Private AI with WebLLM</a></li><li><a href="../data/">Your data</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../troubleshooting/">Troubleshooting</a></li><li><a href="../developers/">For developers</a></li></ul>
+		<h2>Using Gatehouse</h2><ul><li><a href="../overview/">Overview</a></li><li><a href="../sources-and-budgets/">Sources and budgets</a></li><li><a href="../requests/">Requests</a></li><li><a href="../privacy/">Privacy</a></li><li><a href="../settings/">Settings</a></li></ul>
+		<h2>Reference</h2><ul><li><a href="../costs-and-pricing/">How costs are calculated</a></li><li><a href="../local-ai/" aria-current="page">Local AI with WebLLM</a></li><li><a href="../data/">Your data</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../troubleshooting/">Troubleshooting</a></li><li><a href="../developers/">For developers</a></li></ul>
 	</details>
 </aside>
 <article class="doc">
-	<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Help center</a> › Private AI with WebLLM</nav>
-	<h1 id="private-ai-with-webllm">Private AI with WebLLM</h1>
-<p>Gatehouse watches every AI call your plugins make, whatever the provider. If you'd rather not send anything to an AI company at all, <strong>AI Provider for WebLLM</strong> runs a language model inside your own browser, and Gatehouse tracks it like any other provider, at a cost of $0.</p>
+	<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Help center</a> › Local AI with WebLLM</nav>
+	<h1 id="local-ai-with-webllm">Local AI with WebLLM</h1>
+<blockquote>
+<p><strong>Limitations: read this first.</strong></p>
+<ul>
+<li>The model runs <strong>only in an open dashboard (wp-admin) tab</strong>. Close every tab and AI calls fail.</li>
+<li><strong>No cron, WP-CLI or front-end visitors:</strong> background tasks and visitors on your site have no browser running the model.</li>
+<li><strong>Small models</strong> that fit in a browser: useful, but weaker than cloud models.</li>
+<li><strong>Chrome or Edge on a desktop</strong> with WebGPU, and an HTTPS (or <code>localhost</code>) site.</li>
+</ul>
+<p>That makes it a good fit for <strong>development sites and editor-side experiments</strong>, not for a live site's AI features.</p>
+</blockquote>
+<p><strong>AI Provider for WebLLM</strong> runs a language model inside your browser. Gatehouse tracks it like any other provider, at a cost of $0.</p>
 <ul>
 <li><strong>No API key and no bill.</strong> The model runs on your computer's graphics chip (WebGPU).</li>
-<li><strong>Private.</strong> Prompts and answers stay in your browser and your site. Nothing is sent to an AI company.</li>
+<li><strong>Nothing sent to an AI company.</strong> Prompts and answers stay in your browser and your site.</li>
 <li><strong>Free and open source</strong> (GPL), created by Joost de Valk and published by <a href="https://progressplanner.com/" rel="noopener">Progress Planner</a>. Gatehouse isn't affiliated with it; we recommend it because it fits how we think AI should work in WordPress.</li>
 </ul>
 <p>Project page: <a href="https://github.com/ProgressPlanner/ai-provider-for-webllm" rel="noopener">github.com/ProgressPlanner/ai-provider-for-webllm</a></p>
@@ -109,7 +117,7 @@
 <li><strong>Wait for “ready”.</strong> The model loads into each dashboard page you open (from the browser's cache after the first time). Calls made before it finishes fail with <em>No WebLLM worker is connected for model …</em>; try again once <strong>WebLLM worker: ready</strong> shows. Small models load in seconds.</li>
 <li><strong>No background AI.</strong> Scheduled tasks (cron) and WP-CLI have no browser, so AI calls that plugins make in the background fail while WebLLM is the provider. Gatehouse logs them as failed, so you can see which plugins do this.</li>
 <li><strong>Budgets and costs.</strong> Local calls cost $0, so they never use up a budget or show as unpriced. Pausing a plugin still stops its calls.</li>
-<li><strong>Speed depends on your computer.</strong> A laptop with a recent graphics chip answers a short brief in seconds; older machines take longer. Smaller models help.</li>
+<li><strong>Speed depends on your computer.</strong> A laptop with a recent graphics chip answers a short request in seconds; older machines take longer. Smaller models help.</li>
 </ul>
 <h2 id="troubleshooting">Troubleshooting<a class="anchor" href="#troubleshooting" aria-label="Link to this section">#</a></h2>
 <table tabindex="0">
@@ -164,15 +172,15 @@
 		<div class="foot-grid">
 			<div class="foot-about">
 				<a class="brand" href="../../"><span class="mark"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2a7 7 0 0 0-7 7v8a1 1 0 0 0 1 1h3v-6a3 3 0 0 1 6 0v6h3a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7Zm0 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg></span>Gatehouse</a>
-				<p>Cost, budget and privacy control for every AI call your WordPress site makes. Free and open source (GPL).</p>
+				<p>See what each plugin spends on AI, cap it, and see which plugins send personal data to AI providers. Free and open source (GPL).</p>
 			</div>
 			<div>
 				<h2>Product</h2>
 				<ul>
 					<li><a href="../../index.html#features">Features</a></li>
-					<li><a href="../../index.html#pricing">Pricing</a></li>
-					<li><a href="../../pro/">Gatehouse Pro</a></li>
+					<li><a href="../../demo/">Live demo</a></li>
 					<li><a href="../../changelog/">Changelog</a></li>
+					<li><a href="https://github.com/george-stathopoulos/gatehouse">Source code on GitHub</a></li>
 				</ul>
 			</div>
 			<div>
@@ -196,17 +204,17 @@
 				<ul>
 					<li><a href="../../trust/#privacy">Privacy</a></li>
 					<li><a href="../../trust/#security">Security</a></li>
-					<li><a href="../../trust/#compliance">GDPR</a></li>
+					<li><a href="../../trust/#compliance">Privacy laws</a></li>
 					<li><a href="../../trust/#accessibility">Accessibility</a></li>
 				</ul>
 			</div>
 		</div>
 		<div class="foot-bottom">
 			<span>Made with <span class="heart" role="img" aria-label="love">♥</span> by <a href="https://george-stathopoulos.github.io/">George Stathopoulos</a></span>
-			<span>Gatehouse 1.5.0 · This website uses no cookies and no tracking.</span>
+			<span>Gatehouse 2.0.0 · This website uses no cookies and no tracking.</span>
 		</div>
 	</div>
 </footer>
-<script src="../../assets/site.js?v=1.5.0" defer></script>
+<script src="../../assets/site.js?v=2.0.0" defer></script>
 </body>
 </html>
