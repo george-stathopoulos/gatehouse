@@ -8,13 +8,21 @@ Changes on this page are saved when you click **Save changes** in the bar at the
 
 ### Site-wide monthly budget
 
-The most your whole site may spend on AI in a calendar month, in US dollars. When total spend reaches it, **every** AI call is blocked until the 1st of next month or until you raise the budget. Leave it empty for no limit.
+The most your whole site may spend on AI in a calendar month, in US dollars. When total spend reaches it, every AI call Gatehouse can see is blocked until the 1st of next month or until you raise the budget. Leave it empty for no limit.
 
-This works alongside per-source budgets on the [Sources](sources-and-budgets.md) page. A call is blocked if either limit is reached.
+This works alongside per-source budgets on the [Sources](sources-and-budgets.md) page. A call is blocked if either limit is reached. Calls whose cost isn't known (streamed answers a plugin reads itself) don't count towards it.
+
+### Hourly call limit per plugin
+
+Runaway protection: the most AI calls any one plugin or theme may make in an hour. Further calls are blocked, and you get one alert email a day per plugin that hits it. It counts every completed or failed call, including streamed ones whose cost isn't known. A plugin can have its own limit on the [Sources](sources-and-budgets.md#hourly-call-limit) page. Leave it empty for no limit, and set it well above normal use.
 
 ### Email alerts
 
-When on, Gatehouse emails you once when a budget passes the alert threshold, and once when it is reached. This applies to the site-wide budget and to each source's budget, at most once per budget per month.
+When on, Gatehouse emails you:
+
+- once when a budget passes the alert threshold, and once when it is reached (the site-wide budget and each source's budget, at most once per budget per month);
+- once a day per plugin that hits its hourly limit;
+- once a day per plugin whose activity or spending is far above its normal level (see [Alerts](sources-and-budgets.md#alerts)).
 
 ### Alert threshold
 
@@ -28,9 +36,9 @@ The email address for alerts. It defaults to the site administrator's email. Ale
 
 ### Store prompt and response excerpts
 
-Off by default. When on, Gatehouse keeps the first 1,000 characters of each prompt (as sent, after redaction) and each response, shown in the [Requests](requests.md#prompt-and-response-text) details. It only applies to calls made after you turn it on.
+Off by default. When on, Gatehouse keeps the first 1,000 characters of each prompt and each response, shown in the [Requests](requests.md#prompt-and-response-text) details. It only applies to calls made after you turn it on.
 
-Turn it on only while you need it for debugging. Prompts and answers can contain customer data that redaction didn't catch.
+Personal data Gatehouse detects is masked in the stored prompt. Responses are stored as received. Turn it on only while you need it for debugging: prompts and answers can contain customer data detection didn't catch.
 
 ### Keep request history for
 
@@ -44,7 +52,7 @@ Gatehouse estimates each call's cost from the tokens it used and this price tabl
 
 ### Update prices automatically
 
-When on, Gatehouse downloads current prices once a day from OpenRouter's public model list. Nothing about your site is sent.
+When on, Gatehouse downloads current prices once a day from OpenRouter's public model list. It covers Anthropic, OpenAI, Google, xAI, Mistral and DeepSeek models under their own names, and every model on OpenRouter under OpenRouter's names (for example `anthropic/claude-sonnet-5.5`). Groq and Perplexity models aren't covered: add their prices yourself. Nothing about your site is sent.
 - The line below the switch shows when prices were last updated and how many models were included.
 - **Update now** downloads immediately.
 - If a download fails, the error is shown and the last good prices stay in use.
@@ -84,6 +92,6 @@ New prices apply to calls from then on. Calls already logged keep the cost recor
 
 ### Clear request log
 
-Deletes every logged call and resets month-to-date spend. Click the button, then **Click again to confirm** within four seconds. Settings, budgets, prices and your brief are kept. This can't be undone.
+Deletes every logged call and resets month-to-date spend. Click the button, then **Click again to confirm** within four seconds. Settings, budgets, limits and prices are kept. This can't be undone.
 
 > Clearing the log also resets this month's spend to zero, so any source that had reached its budget can make calls again.

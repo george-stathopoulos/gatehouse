@@ -6,6 +6,7 @@ import {
 	ErrorNotice,
 	Loading,
 	MoneyInput,
+	CountInput,
 	Pill,
 	Setting,
 	Switch,
@@ -50,6 +51,7 @@ export default function Welcome( { go } ) {
 		if ( data && ! form ) {
 			setForm( {
 				global_budget: data.budget,
+				rate_limit: data.rate_limit,
 				alerts: {
 					enabled: data.alerts.enabled,
 					email: data.alerts.email,
@@ -74,7 +76,7 @@ export default function Welcome( { go } ) {
 		...( data.approval.active
 			? [ { id: 'approval', label: __( 'Approvals', 'gatehouse' ) } ]
 			: [] ),
-		{ id: 'protect', label: __( 'Protection', 'gatehouse' ) },
+		{ id: 'protect', label: __( 'Safeguards', 'gatehouse' ) },
 		{ id: 'done', label: __( 'Ready', 'gatehouse' ) },
 	];
 	const current = steps[ Math.min( step, steps.length - 1 ) ];
@@ -196,7 +198,7 @@ function StepWelcome() {
 			icon: 'coins',
 			title: __( 'See what AI costs', 'gatehouse' ),
 			text: __(
-				'Every AI call on your site, traced to the plugin that made it, with an estimated cost.',
+				'AI calls made through WordPress, traced to the plugin that made it, with an estimated cost.',
 				'gatehouse'
 			),
 		},
@@ -210,9 +212,9 @@ function StepWelcome() {
 		},
 		{
 			icon: 'shield',
-			title: __( 'Keep personal data on your site', 'gatehouse' ),
+			title: __( 'Know what personal data leaves', 'gatehouse' ),
 			text: __(
-				'Emails, phone numbers and card numbers are replaced before a prompt leaves your server.',
+				'See which plugins send emails, phone numbers or card numbers to AI providers, and replace them for the plugins that don’t need them. Pattern-based, so it does not catch every name or address.',
 				'gatehouse'
 			),
 		},
@@ -224,7 +226,7 @@ function StepWelcome() {
 			</h1>
 			<p className="gatehouse-wizard__lede">
 				{ __(
-					'Gatehouse sits between your plugins and your AI provider. It works with every plugin that uses WordPress’s built-in AI, without any setup in those plugins. This short guide takes about two minutes.',
+					'Gatehouse sits between your plugins and AI providers, with no setup in those plugins. It sees plugins that use the AI Client built into WordPress, and plugins that call Anthropic, OpenAI, Google and similar providers directly with their own API key. It can’t see plugins that send AI requests to their own service (as many SEO and page builder plugins do), or that bypass WordPress’s HTTP functions. This short guide takes about two minutes.',
 					'gatehouse'
 				) }
 			</p>
@@ -498,7 +500,7 @@ function StepProtect( { form, setForm } ) {
 	return (
 		<div className="gatehouse-wizard__body">
 			<h1 className="gatehouse-wizard__title">
-				{ __( 'Protect your site', 'gatehouse' ) }
+				{ __( 'Set up safeguards', 'gatehouse' ) }
 			</h1>
 			<p className="gatehouse-wizard__lede">
 				{ __(
@@ -529,9 +531,29 @@ function StepProtect( { form, setForm } ) {
 					</div>
 				</Setting>
 				<Setting
+					title={ __( 'Hourly call limit per plugin', 'gatehouse' ) }
+					desc={ __(
+						'Stops a plugin stuck in a loop: once it makes this many AI calls in an hour, its further calls are blocked and you get an email. Set it well above normal use. Leave empty for no limit.',
+						'gatehouse'
+					) }
+				>
+					<div style={ { width: 170 } }>
+						<CountInput
+							value={ form.rate_limit }
+							onChange={ ( v ) => set( { rate_limit: v } ) }
+							suffix={ __( 'per hour', 'gatehouse' ) }
+							placeholder={ __( 'No limit', 'gatehouse' ) }
+							label={ __(
+								'Hourly call limit per plugin',
+								'gatehouse'
+							) }
+						/>
+					</div>
+				</Setting>
+				<Setting
 					title={ __( 'Email me about budgets', 'gatehouse' ) }
 					desc={ __(
-						'One email at 80% of a budget and one when it is reached.',
+						'One email at 80% of a budget, one when it is reached, and one if a plugin hits the hourly limit.',
 						'gatehouse'
 					) }
 				>
@@ -583,11 +605,11 @@ function StepProtect( { form, setForm } ) {
 				</Setting>
 				<Setting
 					title={ __(
-						'Remove personal data from AI requests',
+						'Check AI requests for personal data',
 						'gatehouse'
 					) }
 					desc={ __(
-						'Emails, phone numbers, card numbers and similar are replaced before leaving your site, and put back in the answer.',
+						'Shows which plugins send emails, phone numbers and similar to AI providers. Nothing is changed; later you can turn on redaction for the plugins that don’t need the real values.',
 						'gatehouse'
 					) }
 				>
@@ -596,7 +618,10 @@ function StepProtect( { form, setForm } ) {
 						onChange={ ( v ) =>
 							set( { redaction: { enabled: v } } )
 						}
-						label={ __( 'Redact personal data', 'gatehouse' ) }
+						label={ __(
+							'Check AI requests for personal data',
+							'gatehouse'
+						) }
 					/>
 				</Setting>
 			</div>
@@ -624,7 +649,7 @@ function StepDone( { busy, finish } ) {
 				style={ { margin: '0 auto' } }
 			>
 				{ __(
-					'Gatehouse is now watching every AI call on your site. Calls appear on the dashboard as soon as a plugin uses AI.',
+					'Gatehouse now records the AI calls plugins make through WordPress. They appear on the dashboard as soon as a plugin uses AI.',
 					'gatehouse'
 				) }
 			</p>

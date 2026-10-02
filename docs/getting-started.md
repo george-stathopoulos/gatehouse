@@ -2,22 +2,30 @@
 
 ## Requirements
 
-- **WordPress 7.0 or later.** Gatehouse relies on the AI Client that WordPress 7.0 added to core.
+- **WordPress 7.0 or later.**
 - **PHP 7.4 or later.**
-- **An AI provider connected to WordPress,** such as Anthropic, OpenAI or Google. Providers are installed as plugins (for example *AI Provider for Anthropic*) and connected under **Settings → Connectors**.
 - **An administrator account.** Only users who can manage options (administrators) can see Gatehouse or change its settings.
+- **Plugins that use AI in a way Gatehouse can see** (below).
+
+## What Gatehouse can and can't see
+
+- **It sees** plugins and themes that use the **WordPress AI Client** built into WordPress 7.0, and plugins that call **Anthropic, OpenAI, Google, OpenRouter, xAI, Mistral, DeepSeek, Groq or Perplexity directly** with their own API key, through WordPress's HTTP functions.
+- **It can't see** plugins that send AI requests to **their own service** (many SEO, page builder and form plugins work this way), or that bypass WordPress's HTTP functions. No WordPress plugin can.
+- **Streamed answers** (common for chatbots): when the plugin reads the stream itself, Gatehouse sees and can block the call, but the token counts aren't available, so it has no cost. Hourly limits still count it.
 
 ## Install
 
-1. In WordPress, go to **Plugins → Add New**, search for **Gatehouse**, then click **Install** and **Activate**.
-   *Or* upload `gatehouse.zip` under **Plugins → Add New → Upload Plugin**.
-2. A new **Gatehouse** item appears in the admin menu.
+1. Download `gatehouse.zip` from the [latest release on GitHub](https://github.com/george-stathopoulos/gatehouse/releases/latest).
+2. In WordPress, go to **Plugins → Add New → Upload Plugin**, choose the zip, then click **Install Now** and **Activate**.
+3. A new **Gatehouse** item appears in the admin menu.
+
+Once Gatehouse is listed on WordPress.org, you'll also be able to install it from **Plugins → Add New** by searching for **Gatehouse**.
 
 There is nothing else to set up. Gatehouse starts watching AI calls as soon as it is active.
 
-## Connect an AI provider (if you haven't already)
+## Connect an AI provider (for the AI Client)
 
-Gatehouse does not call AI itself and does not need its own API key. It works with the provider you connect to WordPress.
+Gatehouse does not call AI itself and does not need its own API key. Plugins that use the WordPress AI Client need a provider connected to WordPress. Plugins that use their own API key don't, and Gatehouse sees them anyway.
 
 1. Install a provider plugin, such as *AI Provider for Anthropic*, *AI Provider for OpenAI* or *AI Provider for Google*.
 2. Go to **Settings → Connectors** and add your API key.
@@ -31,7 +39,7 @@ After you activate Gatehouse, a short setup guide opens. It takes about two minu
 1. **Welcome:** what Gatehouse does.
 2. **Connect an AI provider:** shows each installed provider and whether it has an API key. If none does, it walks you through installing a provider plugin and adding the key, with buttons that open the right screens. Click **Check again** when you're done.
 3. **Approve plugins that use AI:** shown only if your site uses the AI plugin's Connector Approval feature. See [Connector Approval](#connector-approval).
-4. **Protect your site:** a monthly budget for the whole site, budget alert emails, and personal-data redaction.
+4. **Set up safeguards:** a monthly budget for the whole site, an hourly call limit per plugin, alert emails, automatic price updates and personal-data detection.
 5. **Ready:** go to your dashboard, or explore with demo data.
 
 ![The setup guide](images/setup-2.png)
@@ -65,7 +73,7 @@ Turn on the **Demo data** switch at the top right of Gatehouse, or click **Explo
 ![Demo data](images/demo-mode.png)
 
 - **Your real data is safe.** Demo data never mixes with your real log, budgets or settings, and real AI calls keep being controlled by your real settings.
-- **The banner tells you where you are.** While demo data is on, a banner says so on every page. Changes you make, such as budgets or a brief, are saved to the demo only.
+- **The banner tells you where you are.** While demo data is on, a banner says so on every page. Changes you make, such as budgets or limits, are saved to the demo only.
 - **Back to my data** switches back. Your demo data is kept for next time.
 - **Delete demo data** removes the sandbox completely.
 
@@ -90,9 +98,9 @@ On each page, the **?** button next to the page title opens the help for that pa
 
 The setup guide covers the essentials. Afterwards:
 
-1. **Give heavy users their own budget.** On **[Sources](sources-and-budgets.md)**, open a plugin's **Policy** and set a monthly budget.
-2. **Review privacy.** On **[Privacy](privacy.md)**, add names or terms that must never reach an AI provider, and try the live tester.
-3. **Optional: write a brand brief.** On **[Brand brief](brand-brief.md)**, describe your voice and rules.
+1. **Give heavy users their own budget and limit.** On **[Sources](sources-and-budgets.md)**, open a plugin's **Policy** and set a monthly budget and an hourly call limit.
+2. **Review privacy after a few days.** On **[Privacy](privacy.md)**, see which plugins send personal data, and turn on redaction for the ones that don't need the real values. Add names or terms to watch for.
+3. **Keep an AI data map.** On **[Privacy](privacy.md#ai-data-map)**, download the CSV for your records.
 
 ## Light and dark mode
 

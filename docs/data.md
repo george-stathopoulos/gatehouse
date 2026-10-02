@@ -21,21 +21,17 @@ One row per AI call, in the database table `{prefix}gatehouse_requests` (usually
 | Input and output tokens | `1612`, `456` |
 | Estimated cost, and whether the model had a price | `0.0039` |
 | Response time | `938` ms |
-| Number of items redacted | `2` |
-| Whether the brand brief was added | yes / no |
+| Kinds of personal data found, and how many | `email:2,phone:1` (never the values) |
+| Number of items replaced, when redaction is on for that source | `3` |
+| Route | `ai_client` (WordPress AI Client) or `direct` (the plugin's own API key) |
 | Note | block reason or provider error |
-| Request fingerprint | a one-way hash of the request as sent, used to spot repeated requests. It cannot be turned back into the prompt. |
-| Cached / saved | whether Gatehouse Pro answered from its cache, and what that saved |
+| Request fingerprint | a one-way hash of the request as sent. It cannot be turned back into the prompt. |
 | Prompt and response excerpts | **Empty unless you turn on excerpts** |
 
 **What is never stored:**
 - prompt or response text, unless you turn on excerpts;
-- the personal data that was redacted;
+- the personal data that was detected or replaced;
 - API keys.
-
-### With Gatehouse Pro
-
-Gatehouse Pro's response cache stores **answer text** from AI providers, in the table `{prefix}gatehouse_pro_cache`, for the lifetime you choose (24 hours by default). Answers are stored before personal data is restored, so the cache holds placeholders such as `[EMAIL_1]` rather than the redacted values, except for sources set to **Skip redaction**. The cache is size-limited, cleared on demand, and deleted when Pro is uninstalled. See [Gatehouse Pro](pro.md#privacy).
 
 ### Settings and totals
 
@@ -43,15 +39,16 @@ Gatehouse's own options in the WordPress options table:
 
 | Option | Contents |
 |---|---|
-| `gatehouse_settings` | All settings: budgets, policies, alerts, redaction, brief, logging, price edits |
+| `gatehouse_settings` | All settings: budgets, hourly limits, policies, alerts, personal data detection and redaction, logging, price edits |
 | `gatehouse_spend_YYYYMM` | Month-to-date spend totals per source, one option per month |
-| `gatehouse_alerts_YYYYMM` | Which alert emails were sent that month |
+| `gatehouse_alerts_YYYYMM` | Which budget alert emails were sent that month |
+| `gatehouse_alerts_rate`, `gatehouse_alerts_spike` | The last day an hourly-limit or spike alert was sent, per source |
 | `gatehouse_synced_prices` | The last downloaded price list, when automatic price updates are on |
 | `gatehouse_source_labels` | Plugin and theme names, so history stays readable after a plugin is deleted |
 | `gatehouse_db_version` | Database table version |
 | `gatehouse_providers` (transient) | Which AI providers are connected, cached for 10 minutes |
 
-A daily WordPress cron job (`gatehouse_prune`) deletes calls older than your retention period. A second daily job (`gatehouse_price_sync`) downloads prices, and only exists while automatic price updates are on.
+Scheduled WordPress tasks: `gatehouse_prune` (daily) deletes calls older than your retention period; `gatehouse_spike_check` (hourly) looks for unusual activity; `gatehouse_price_sync` (daily) downloads prices, and only exists while automatic price updates are on.
 
 ## How long data is kept
 
@@ -60,8 +57,9 @@ A daily WordPress cron job (`gatehouse_prune`) deletes calls older than your ret
 
 ## Personal data and privacy laws
 
-- **Redaction reduces the personal data sent to AI providers.** It replaces emails, phone numbers, card numbers, IBANs and US Social Security numbers (plus IP addresses and your custom terms, if enabled) before requests leave your server. See [Privacy](privacy.md).
-- **The request log stores user IDs, not names or emails.** With excerpts turned on, prompts are stored after redaction (with placeholders). Answers, however, are stored as your plugin received them, *after* the real values were put back, so they can contain personal data. Only turn excerpts on when you need them.
+- **Gatehouse shows which plugins send personal data to AI providers,** and can replace it for the plugins you choose. Detection and redaction are pattern-based: they reduce what leaves your site, they don't guarantee nothing personal is sent. See [Privacy](privacy.md).
+- **The AI data map** (Privacy page) gives you a spreadsheet of which plugins send what to which providers, for your records of processing.
+- **The request log stores user IDs, not names or emails.** With excerpts turned on, detected personal data is masked in stored prompts. Answers are stored as your plugin received them, so they can contain personal data. Only turn excerpts on when you need them.
 - **Export and erasure requests are handled by WordPress's own privacy tools.**
   - **Tools → Export Personal Data** includes a person's AI requests: date, source, model, status, tokens, estimated cost and any stored excerpts.
   - **Tools → Erase Personal Data** anonymises them. The link to the user and any excerpts are removed, but the cost stays so budgets remain correct.
@@ -73,5 +71,5 @@ Gatehouse does not replace your agreement with your AI provider about how *they*
 
 ## Deactivating and uninstalling
 
-- **Deactivating** stops Gatehouse and the daily clean-up, but keeps your log and settings, so nothing is lost if you reactivate.
-- **Deleting the plugin** (Plugins → Delete) removes everything: the request table, every `gatehouse_` option and transient, and the scheduled clean-up.
+- **Deactivating** stops Gatehouse and its scheduled tasks, but keeps your log and settings, so nothing is lost if you reactivate.
+- **Deleting the plugin** (Plugins → Delete) removes everything: the request table, every `gatehouse_` option and transient, and the scheduled tasks.

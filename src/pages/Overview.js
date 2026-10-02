@@ -76,7 +76,7 @@ export default function Overview( { go } ) {
 				help="overview"
 				title={ __( 'Overview', 'gatehouse' ) }
 				lede={ __(
-					'Every AI call made through the WordPress AI Client on this site: who made it, what it cost, and what the gateway changed or blocked.',
+					'The AI calls plugins on this site make through WordPress: who made it, what it cost, and what the gateway changed or blocked.',
 					'gatehouse'
 				) }
 			>
@@ -208,6 +208,7 @@ export default function Overview( { go } ) {
 							<BudgetCard month={ month } go={ go } />
 							<AttentionCard
 								sources={ data.sources }
+								spikes={ data.spikes || [] }
 								kpis={ kpis }
 								go={ go }
 							/>
@@ -276,20 +277,20 @@ export default function Overview( { go } ) {
 						<Stat
 							icon="shield"
 							label={ __(
-								'Personal data redacted',
+								'Calls with personal data',
 								'gatehouse'
 							) }
 							tip={ __(
-								'Emails, phone numbers and other personal data replaced with placeholders before prompts left your site.',
+								'AI calls that contained emails, phone numbers or other personal data. See which plugins send it, and turn on redaction where it isn’t needed, on the Privacy page.',
 								'gatehouse'
 							) }
-							value={ compact( kpis.redactions ) }
+							value={ compact( kpis.pii_calls ) }
 							delta={ change(
-								kpis.redactions,
-								previous.redactions
+								kpis.pii_calls,
+								previous.pii_calls
 							) }
-							goodWhen="neutral"
-							trend={ series.redactions }
+							goodWhen="down"
+							trend={ series.pii_calls }
 							vs={ vs }
 						/>
 						<Stat
@@ -307,7 +308,6 @@ export default function Overview( { go } ) {
 						/>
 					</div>
 
-					<RepeatsCard data={ data } range={ range } go={ go } />
 					<div className="gatehouse-grid">
 						<Card
 							className="gatehouse-span-7"
@@ -482,8 +482,8 @@ export default function Overview( { go } ) {
 													r.redactions > 0 &&
 													` · ${ sprintf(
 														/* translators: %d: number of items redacted. */ _n(
-															'%d item redacted',
-															'%d items redacted',
+															'%d item replaced',
+															'%d items replaced',
 															r.redactions,
 															'gatehouse'
 														),
@@ -513,170 +513,6 @@ export default function Overview( { go } ) {
 				</>
 			) }
 		</div>
-	);
-}
-
-/**
- * Repeated prompts and caching: real savings when an add-on caches responses, otherwise the
- * savings that caching could have delivered, computed from request fingerprints.
- *
- * @param {Object}   props       Props.
- * @param {Object}   props.data  Overview data.
- * @param {string}   props.range Period label.
- * @param {Function} props.go    Navigate.
- * @return {JSX.Element|null} Card.
- */
-function RepeatsCard( { data, range, go } ) {
-	const boot = window.gatehouseBoot || {};
-	const [ hidden, setHidden ] = useStored( 'hide-repeats', false );
-	const { kpis, repeats } = data;
-	const saved = kpis.saved || 0;
-
-	if (
-		! boot.pro &&
-		( hidden || ! repeats || repeats.calls < 1 || repeats.potential <= 0 )
-	) {
-		return null;
-	}
-	if ( boot.pro && saved <= 0 && ( ! repeats || repeats.calls < 1 ) ) {
-		return null;
-	}
-
-	const share = repeats.total_calls
-		? Math.round( ( repeats.calls / repeats.total_calls ) * 100 )
-		: 0;
-	const top = ( repeats.sources || [] ).slice( 0, 3 );
-
-	let action = null;
-	if ( boot.pro ) {
-		action = (
-			<Button size="sm" icon="bolt" onClick={ () => go( 'caching' ) }>
-				{ __( 'Caching settings', 'gatehouse' ) }
-			</Button>
-		);
-	} else if ( boot.proUrl ) {
-		action = (
-			<a
-				className="gatehouse-btn is-primary is-sm"
-				href={ boot.proUrl }
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				<Icon name="bolt" size={ 14 } />
-				{ __( 'Get Gatehouse Pro', 'gatehouse' ) }
-			</a>
-		);
-	}
-
-	return (
-		<Card bodyClass={ null } style={ { marginBottom: 18 } }>
-			<div className="gatehouse-savings">
-				<span className="gatehouse-savings__icon">
-					<Icon name="bolt" size={ 20 } />
-				</span>
-				<div className="gatehouse-savings__text">
-					{ saved > 0 ? (
-						<>
-							<div className="gatehouse-savings__title">
-								{ sprintf(
-									/* translators: 1: amount saved, 2: period such as "last 30 days". */
-									__(
-										'Caching saved %1$s, %2$s',
-										'gatehouse'
-									),
-									money( saved ),
-									range
-								) }
-							</div>
-							<div className="gatehouse-muted">
-								{ sprintf(
-									/* translators: %s: number of calls. */
-									_n(
-										'%s call was answered instantly from the cache.',
-										'%s calls were answered instantly from the cache.',
-										kpis.cached,
-										'gatehouse'
-									),
-									integer( kpis.cached )
-								) }
-								{ repeats.potential > 0 &&
-									' ' +
-										sprintf(
-											/* translators: %s: amount. */
-											__(
-												'Repeats that were not cached cost another %s.',
-												'gatehouse'
-											),
-											money( repeats.potential )
-										) }
-							</div>
-						</>
-					) : (
-						<>
-							<div className="gatehouse-savings__title">
-								{ sprintf(
-									/* translators: 1: amount, 2: period such as "last 30 days". */
-									__(
-										'Caching could have saved about %1$s, %2$s',
-										'gatehouse'
-									),
-									money( repeats.potential ),
-									range
-								) }
-							</div>
-							<div className="gatehouse-muted">
-								{ sprintf(
-									/* translators: 1: number of calls, 2: percent. */
-									__(
-										'%1$s calls (%2$s%%) repeated an identical earlier request. A response cache answers repeats instantly, at no cost.',
-										'gatehouse'
-									),
-									integer( repeats.calls ),
-									share
-								) }
-							</div>
-						</>
-					) }
-					{ top.length > 0 && (
-						<div
-							className="gatehouse-row"
-							style={ { gap: 6, marginTop: 10 } }
-						>
-							{ top.map( ( s ) => (
-								<span key={ s.id } className="gatehouse-pill">
-									{ s.label }
-									<strong
-										style={ {
-											color: 'var(--gatehouse-ink)',
-										} }
-									>
-										{ money( s.potential ) }
-									</strong>
-								</span>
-							) ) }
-						</div>
-					) }
-				</div>
-				<div
-					className="gatehouse-row"
-					style={ { gap: 6, flexWrap: 'nowrap' } }
-				>
-					{ action }
-					{ ! boot.pro && (
-						<Button
-							variant="ghost"
-							size="sm"
-							icon="x"
-							aria-label={ __(
-								'Hide this suggestion',
-								'gatehouse'
-							) }
-							onClick={ () => setHidden( true ) }
-						/>
-					) }
-				</div>
-			</div>
-		</Card>
 	);
 }
 
@@ -874,8 +710,34 @@ function BudgetCard( { month, go } ) {
 	);
 }
 
-function AttentionCard( { sources, kpis, go } ) {
+function AttentionCard( { sources, spikes, kpis, go } ) {
 	const items = [];
+	spikes.forEach( ( spike ) => {
+		items.push( {
+			id: `${ spike.source }-${ spike.kind }`,
+			tone: 'serious',
+			icon: 'up',
+			title: spike.label,
+			text:
+				spike.kind === 'calls'
+					? sprintf(
+							/* translators: 1: calls in the last hour, 2: usual calls per hour. */ __(
+								'Unusual activity: %1$s calls in the last hour, usually about %2$s',
+								'gatehouse'
+							),
+							spike.now,
+							spike.normal
+					  )
+					: sprintf(
+							/* translators: 1: spend in the last 24 hours, 2: usual daily spend. */ __(
+								'Unusual spending: %1$s in the last 24 hours, usually about %2$s a day',
+								'gatehouse'
+							),
+							money( spike.now ),
+							money( spike.normal )
+					  ),
+		} );
+	} );
 	sources.forEach( ( s ) => {
 		if ( s.status === 'paused' ) {
 			items.push( {
@@ -884,6 +746,21 @@ function AttentionCard( { sources, kpis, go } ) {
 				icon: 'pause',
 				title: s.label,
 				text: __( 'Paused: its AI calls are blocked', 'gatehouse' ),
+			} );
+		} else if ( s.status === 'limited' ) {
+			items.push( {
+				id: s.id,
+				tone: 'critical',
+				icon: 'gauge',
+				title: s.label,
+				text: sprintf(
+					/* translators: 1: calls in the last hour, 2: hourly limit. */ __(
+						'Hit its hourly limit: %1$s calls (limit %2$s). Possible loop or spam wave',
+						'gatehouse'
+					),
+					s.last_hour,
+					s.rate_limit
+				),
 			} );
 		} else if ( s.status === 'capped' ) {
 			items.push( {
@@ -1192,7 +1069,7 @@ function Banners( { data, go } ) {
 									) }
 								</strong>{ ' ' }
 								{ __(
-									'Connect Anthropic, OpenAI, Google or another provider so plugins can use AI. Gatehouse watches every call automatically.',
+									'Connect Anthropic, OpenAI, Google or another provider so plugins can use AI. Plugins that use their own API key are recorded too, as soon as they make a call.',
 									'gatehouse'
 								) }{ ' ' }
 								<a
@@ -1201,7 +1078,7 @@ function Banners( { data, go } ) {
 									rel="noopener noreferrer"
 								>
 									{ __(
-										'Or run AI privately in your browser, at no cost, with AI Provider for WebLLM.',
+										'On a development site, you can also try AI Provider for WebLLM, which runs a small model in your browser.',
 										'gatehouse'
 									) }
 								</a>
@@ -1306,7 +1183,7 @@ function Onboarding() {
 				art={ <GatewayArt /> }
 				title={ __( 'Waiting for the first AI call', 'gatehouse' ) }
 				text={ __(
-					'Gatehouse is active. As soon as any plugin or theme uses the WordPress AI Client, its calls appear here with cost, model and what was protected.',
+					'Gatehouse is active. As soon as a plugin or theme calls AI, through the WordPress AI Client or directly with its own API key, its calls appear here with cost, model and any personal data they contained.',
 					'gatehouse'
 				) }
 			>
@@ -1326,11 +1203,11 @@ function Onboarding() {
 					<div className="gatehouse-step">
 						<div className="gatehouse-step__n">2</div>
 						<div className="gatehouse-step__title">
-							{ __( 'Protect', 'gatehouse' ) }
+							{ __( 'Check', 'gatehouse' ) }
 						</div>
 						<div className="gatehouse-step__text">
 							{ __(
-								'Personal data is swapped for placeholders before it leaves your site, and restored in the answer.',
+								'Requests are checked for personal data such as emails and phone numbers, so you see which plugins send it. Turn on redaction per plugin when you want it replaced.',
 								'gatehouse'
 							) }
 						</div>

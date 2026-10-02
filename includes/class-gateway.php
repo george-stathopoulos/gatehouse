@@ -13,10 +13,17 @@ defined( 'ABSPATH' ) || exit;
  * Flow for one `generate_*()` call:
  * 1. `wp_ai_client_prevent_prompt`  - attribute the caller, block it when paused or over budget.
  * 2. `wp_ai_client_before_generate_result` - start the timer.
- * 3. `http_request_args`            - redact personal data and add the brand brief.
+ * 3. `http_request_args`            - detect personal data; replace it only for sources set to redact.
  * 4. `http_response`                - restore redacted values in the answer.
  * 5. `wp_ai_client_after_generate_result`  - record model, tokens and cost.
  * Failed provider calls are recorded from `http_api_debug`.
+ *
+ * Direct calls: plugins that call an AI provider themselves through the WordPress HTTP API, with
+ * their own API key, skip the AI Client. Gatehouse sees those at the HTTP level instead:
+ * `http_request_args` attributes the call and checks it for personal data, `pre_http_request`
+ * blocks it when the source is paused or over budget, and `http_response` records model, tokens
+ * and cost from the provider's answer. Calls made with other HTTP libraries (or from the browser)
+ * are not visible to any WordPress plugin.
  */
 final class Gatehouse_Gateway {
 
@@ -43,6 +50,8 @@ final class Gatehouse_Gateway {
 		add_action( 'wp_ai_client_after_generate_result', array( __CLASS__, 'after_generate' ) );
 		add_filter( 'http_request_args', array( __CLASS__, 'rewrite_request' ), 20, 2 );
 		add_filter( 'http_response', array( __CLASS__, 'restore_response' ), 5, 3 );
+		add_filter( 'pre_http_request', array( __CLASS__, 'enforce_direct' ), 7, 3 );
+		add_filter( 'http_response', array( __CLASS__, 'record_direct' ), 6, 3 );
 		add_action( 'http_api_debug', array( __CLASS__, 'record_failure' ), 10, 5 );
 		add_filter( 'pre_http_request', array( __CLASS__, 'record_approval_block' ), 6, 3 );
 	}
@@ -104,6 +113,12 @@ final class Gatehouse_Gateway {
 		if ( $policy['paused'] ) {
 			return __( 'Source is paused', 'gatehouse' );
 		}
+		$limit = Gatehouse_Settings::rate_limit_for( $source );
+		if ( $limit > 0 && Gatehouse_Ledger::calls_last_hour( $source ) >= $limit ) {
+			Gatehouse_Alerts::rate_limited( $source, $limit );
+			/* translators: %d: number of calls per hour. */
+			return sprintf( __( 'Hourly limit reached (%d calls per hour)', 'gatehouse' ), $limit );
+		}
 		if ( $policy['budget'] > 0 && Gatehouse_Ledger::month_spend( $source ) >= $policy['budget'] ) {
 			return __( 'Monthly budget reached', 'gatehouse' );
 		}
@@ -125,7 +140,8 @@ final class Gatehouse_Gateway {
 				'prompt'  => '',
 			);
 		}
-		self::$call['started'] = microtime( true );
+		self::$call['started']    = microtime( true );
+		self::$call['generating'] = true;
 	}
 
 	/**
@@ -175,7 +191,8 @@ final class Gatehouse_Gateway {
 					'priced'        => null === $cost ? 0 : 1,
 					'latency_ms'    => isset( $call['started'] ) ? (int) round( ( microtime( true ) - $call['started'] ) * 1000 ) : 0,
 					'redactions'    => (int) ( $call['redactions'] ?? 0 ),
-					'brief'         => ! empty( $call['brief'] ) ? 1 : 0,
+					'pii'           => (string) ( $call['pii'] ?? '' ),
+					'channel'       => 'ai_client',
 					'prompt_hash'   => (string) ( $call['prompt_hash'] ?? '' ),
 				),
 				$excerpt
@@ -186,7 +203,12 @@ final class Gatehouse_Gateway {
 	}
 
 	/**
-	 * Redact personal data and add the brand brief to an outgoing provider request.
+	 * Detect personal data in an outgoing provider request, and replace it when the source's policy
+	 * says so.
+	 *
+	 * Detection never changes the request. Replacing values can change what a plugin gets back (an AI
+	 * can't check an email address it can't see), so it is off until the site owner turns it on for
+	 * a source.
 	 *
 	 * @param array  $args Request arguments.
 	 * @param string $url  Request URL.
@@ -202,33 +224,52 @@ final class Gatehouse_Gateway {
 			return $args;
 		}
 
+		// No AI Client generation in flight: a plugin is calling the provider directly.
+		if ( empty( self::$call['generating'] ) && null !== Gatehouse_Provider_Adapters::text_format( $url ) ) {
+			self::$call = array(
+				'source'  => Gatehouse_Attribution::detect(),
+				'method'  => '',
+				'prompt'  => '',
+				'started' => microtime( true ),
+				'direct'  => $url,
+				'stream'  => ! empty( $body['stream'] ) || false !== stripos( (string) $url, 'streamGenerateContent' ),
+			);
+		}
+
 		$source    = self::$call['source'] ?? Gatehouse_Attribution::detect();
 		$policy    = Gatehouse_Settings::source( $source );
 		$redaction = Gatehouse_Settings::get( 'redaction' );
-		$brief     = Gatehouse_Settings::get( 'brief' );
-		$format    = Gatehouse_Provider_Adapters::text_format( $url );
 
 		self::$redactor = null;
-		if ( ! empty( $redaction['enabled'] ) && ! $policy['skip_redaction'] ) {
-			self::$redactor = new Gatehouse_Redactor( $redaction );
-			$body           = self::$redactor->redact_tree( $body );
-		}
-
-		$brief_applied = false;
-		if ( $format && ! empty( $brief['enabled'] ) && '' !== trim( $brief['text'] ) && ! $policy['skip_brief'] ) {
-			$body          = Gatehouse_Provider_Adapters::add_brief( $body, $format, $brief['text'] );
-			$brief_applied = true;
+		$found          = array();
+		$changed        = false;
+		$masked         = $body;
+		if ( ! empty( $redaction['enabled'] ) ) {
+			$redactor = new Gatehouse_Redactor( $redaction );
+			$redacted = $redactor->redact_tree( $body );
+			$found    = $redactor->counts();
+			$masked   = $redacted;
+			if ( $policy['redact'] && $redactor->count() > 0 ) {
+				$body           = $redacted;
+				$changed        = true;
+				self::$redactor = $redactor;
+			}
 		}
 
 		self::$call['source']     = $source;
 		self::$call['redactions'] = self::$redactor ? self::$redactor->count() : 0;
-		self::$call['brief']      = $brief_applied;
-		self::$call['prompt']     = self::prompt_text( $body );
+		self::$call['pii']        = Gatehouse_Redactor::encode_counts( $found );
+		// Optional excerpts always use the masked text, even when the request itself was sent unchanged.
+		self::$call['prompt']     = self::prompt_text( $masked );
 
-		$args['body'] = wp_json_encode( $body );
+		// Only re-encode when something changed, so detection alone sends the request byte for byte.
+		if ( $changed ) {
+			$args['body'] = wp_json_encode( $body );
+		}
 
-		// Fingerprint of the request exactly as sent (after redaction, so personal data is not part of it).
-		// Identical fingerprints mean a repeated prompt; nothing about the prompt itself is stored.
+		// One-way fingerprint of the request exactly as sent. Identical fingerprints mean a repeated
+		// prompt; the prompt itself is not stored. It must be the body as sent (not the masked copy):
+		// two requests that differ only in an email address are different requests.
 		self::$call['prompt_hash'] = sha1( (string) wp_parse_url( $url, PHP_URL_HOST ) . (string) wp_parse_url( $url, PHP_URL_PATH ) . '|' . $args['body'] );
 
 		return $args;
@@ -286,11 +327,97 @@ final class Gatehouse_Gateway {
 				'status'     => 'error',
 				'latency_ms' => isset( $call['started'] ) ? (int) round( ( microtime( true ) - $call['started'] ) * 1000 ) : 0,
 				'redactions' => (int) ( $call['redactions'] ?? 0 ),
-				'brief'      => ! empty( $call['brief'] ) ? 1 : 0,
+				'pii'        => (string) ( $call['pii'] ?? '' ),
+				'channel'    => ! empty( $call['direct'] ) ? 'direct' : 'ai_client',
 				'note'       => $note,
 			)
 		);
 		self::reset();
+	}
+
+	/**
+	 * Block a direct provider call when its source is paused or over budget.
+	 *
+	 * The plugin gets a WP_Error back, as it would for any failed request, so nothing is sent or
+	 * charged.
+	 *
+	 * @param false|array|WP_Error $pre  Short-circuit value.
+	 * @param array                $args Request arguments.
+	 * @param string               $url  URL.
+	 * @return false|array|WP_Error
+	 */
+	public static function enforce_direct( $pre, $args, $url ) {
+		if ( false !== $pre || empty( self::$call['direct'] ) || self::$call['direct'] !== $url ) {
+			return $pre;
+		}
+		$reason = self::block_reason( self::$call['source'] );
+		if ( null === $reason ) {
+			return $pre;
+		}
+		$hosts = Gatehouse_Provider_Adapters::hosts();
+		Gatehouse_Ledger::insert(
+			array(
+				'source'   => self::$call['source'],
+				'provider' => $hosts[ (string) wp_parse_url( $url, PHP_URL_HOST ) ] ?? '',
+				'model'    => self::request_model( $args, $url ),
+				'status'   => 'blocked',
+				'channel'  => 'direct',
+				'note'     => $reason,
+			)
+		);
+		self::reset();
+		/* translators: %s: reason, such as "Monthly budget reached". */
+		return new WP_Error( 'gatehouse_blocked', sprintf( __( 'Blocked by Gatehouse: %s', 'gatehouse' ), $reason ) );
+	}
+
+	/**
+	 * Record a successful direct provider call: model, tokens and estimated cost.
+	 *
+	 * Failed calls are recorded by record_failure(), which runs first.
+	 *
+	 * @param array|WP_Error $response Response.
+	 * @param array          $args     Request arguments.
+	 * @param string         $url      Request URL.
+	 * @return array|WP_Error Unchanged.
+	 */
+	public static function record_direct( $response, $args, $url ) {
+		if ( empty( self::$call['direct'] ) || self::$call['direct'] !== $url || ! is_array( $response ) ) {
+			return $response;
+		}
+		$call     = self::$call;
+		$hosts    = Gatehouse_Provider_Adapters::hosts();
+		$provider = $hosts[ (string) wp_parse_url( $url, PHP_URL_HOST ) ] ?? '';
+		$usage    = Gatehouse_Provider_Adapters::usage_from_body( wp_remote_retrieve_body( $response ) );
+		$model    = '' !== $usage['model'] ? $usage['model'] : self::request_model( $args, $url );
+		$cost     = $usage['found'] ? Gatehouse_Pricing::cost( $model, $usage['input'], $usage['output'] ) : null;
+		$note     = '';
+		if ( ! $usage['found'] && ! empty( $call['stream'] ) ) {
+			$note = __( 'Streamed answer read by the plugin itself: token use and cost are not known', 'gatehouse' );
+		} elseif ( ! $usage['found'] ) {
+			$note = __( 'The provider’s answer did not include token use', 'gatehouse' );
+		}
+
+		Gatehouse_Ledger::insert(
+			array(
+				'source'        => $call['source'],
+				'provider'      => $provider,
+				'model'         => $model,
+				'capability'    => 'text_generation',
+				'status'        => 'ok',
+				'input_tokens'  => $usage['input'],
+				'output_tokens' => $usage['output'],
+				'cost'          => null === $cost ? 0 : $cost,
+				'priced'        => null === $cost ? 0 : 1,
+				'latency_ms'    => isset( $call['started'] ) ? (int) round( ( microtime( true ) - $call['started'] ) * 1000 ) : 0,
+				'redactions'    => (int) ( $call['redactions'] ?? 0 ),
+				'pii'           => (string) ( $call['pii'] ?? '' ),
+				'channel'       => 'direct',
+				'prompt_hash'   => (string) ( $call['prompt_hash'] ?? '' ),
+				'note'          => $note,
+			)
+		);
+		self::reset();
+		return $response;
 	}
 
 	/**

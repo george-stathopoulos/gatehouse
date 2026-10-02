@@ -15,8 +15,53 @@ final class Gatehouse_Alerts {
 	/**
 	 * Hook into the ledger.
 	 */
+	const SPIKE_HOOK = 'gatehouse_spike_check';
+
 	public static function init() {
 		add_action( 'gatehouse_recorded', array( __CLASS__, 'check' ), 10, 2 );
+		add_action( self::SPIKE_HOOK, array( __CLASS__, 'check_spikes' ) );
+		add_action(
+			'init',
+			function () {
+				if ( ! wp_next_scheduled( self::SPIKE_HOOK ) ) {
+					wp_schedule_event( time() + 10 * MINUTE_IN_SECONDS, 'hourly', self::SPIKE_HOOK );
+				}
+			}
+		);
+	}
+
+	/**
+	 * Hourly: email once a day per source and kind when its activity is far above its normal level.
+	 */
+	public static function check_spikes() {
+		$alerts = Gatehouse_Settings::get( 'alerts' );
+		if ( empty( $alerts['enabled'] ) || ! is_email( $alerts['email'] ) ) {
+			return;
+		}
+		$sent  = (array) get_option( 'gatehouse_alerts_spike', array() );
+		$today = current_time( 'Y-m-d' );
+		$site  = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+		foreach ( Gatehouse_Stats::spikes() as $spike ) {
+			$key = $spike['source'] . '|' . $spike['kind'];
+			if ( ( $sent[ $key ] ?? '' ) === $today ) {
+				continue;
+			}
+			$sent[ $key ] = $today;
+			if ( 'calls' === $spike['kind'] ) {
+				/* translators: 1: site name, 2: plugin or theme name. */
+				$subject = sprintf( __( '[%1$s] Unusual AI activity: %2$s', 'gatehouse' ), $site, $spike['label'] );
+				/* translators: 1: plugin or theme name, 2: calls in the last hour, 3: usual calls per hour. */
+				$message = sprintf( __( "%1\$s made %2\$d AI calls in the last hour. It usually makes about %3\$s an hour.\n\nThis can be a busy moment, or a loop, bug or wave of spam. Gatehouse is not blocking it. To cap it, set an hourly call limit for it on the Sources page.", 'gatehouse' ), $spike['label'], $spike['now'], number_format_i18n( $spike['normal'], 1 ) );
+			} else {
+				/* translators: 1: site name, 2: plugin or theme name. */
+				$subject = sprintf( __( '[%1$s] Unusual AI spending: %2$s', 'gatehouse' ), $site, $spike['label'] );
+				/* translators: 1: plugin or theme name, 2: spend in the last 24 hours, 3: usual daily spend. */
+				$message = sprintf( __( "%1\$s spent %2\$s on AI in the last 24 hours. It usually spends about %3\$s a day.\n\nGatehouse is not blocking it. To cap it, set a monthly budget or an hourly call limit for it on the Sources page.", 'gatehouse' ), $spike['label'], self::money( $spike['now'] ), self::money( $spike['normal'] ) );
+			}
+			$message .= "\n\n" . admin_url( 'admin.php?page=gatehouse#/sources' );
+			wp_mail( $alerts['email'], $subject, $message );
+		}
+		update_option( 'gatehouse_alerts_spike', $sent, false );
 	}
 
 	/**
@@ -100,6 +145,35 @@ final class Gatehouse_Alerts {
 	 * @param float $amount Amount.
 	 * @return string
 	 */
+	/**
+	 * Email once a day per source when it hits its hourly call limit: often a sign of a loop.
+	 *
+	 * @param string $source Source id.
+	 * @param int    $limit  Calls per hour.
+	 */
+	public static function rate_limited( $source, $limit ) {
+		$alerts = Gatehouse_Settings::get( 'alerts' );
+		if ( empty( $alerts['enabled'] ) || ! is_email( $alerts['email'] ) || Gatehouse_Demo::active() ) {
+			return;
+		}
+		$sent  = (array) get_option( 'gatehouse_alerts_rate', array() );
+		$today = current_time( 'Y-m-d' );
+		if ( ( $sent[ $source ] ?? '' ) === $today ) {
+			return;
+		}
+		$sent[ $source ] = $today;
+		update_option( 'gatehouse_alerts_rate', $sent, false );
+
+		$name = Gatehouse_Attribution::label( $source );
+		$site = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
+		/* translators: 1: site name, 2: plugin or theme name. */
+		$subject = sprintf( __( '[%1$s] %2$s hit its hourly AI limit', 'gatehouse' ), $site, $name );
+		/* translators: 1: plugin or theme name, 2: calls per hour. */
+		$message = sprintf( __( "%1\$s made %2\$d AI calls in the last hour, its limit. Gatehouse is blocking its further calls until the hourly count drops.\n\nThis can mean a loop, a bug or a wave of spam. If the volume is expected, raise the limit for it on the Sources page.", 'gatehouse' ), $name, $limit );
+		$message .= "\n\n" . admin_url( 'admin.php?page=gatehouse#/sources' );
+		wp_mail( $alerts['email'], $subject, $message );
+	}
+
 	private static function money( $amount ) {
 		return '$' . number_format_i18n( $amount, 2 );
 	}
@@ -114,5 +188,8 @@ final class Gatehouse_Alerts {
 		foreach ( $names as $name ) {
 			delete_option( $name );
 		}
+		delete_option( 'gatehouse_alerts_rate' );
+		delete_option( 'gatehouse_alerts_spike' );
+		wp_clear_scheduled_hook( self::SPIKE_HOOK );
 	}
 }

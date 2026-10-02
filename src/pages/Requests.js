@@ -33,7 +33,7 @@ export default function Requests() {
 		source: '',
 		status: '',
 		model: '',
-		redacted: false,
+		pii: false,
 	} );
 	const [ page, setPage ] = useState( 1 );
 	const [ open, setOpen ] = useState( null );
@@ -44,7 +44,7 @@ export default function Requests() {
 		source: filters.source || undefined,
 		status: filters.status || undefined,
 		model: filters.model || undefined,
-		redacted: filters.redacted || undefined,
+		pii: filters.pii || undefined,
 	} );
 	const { data, error, loading, reload } = useApi( path );
 	const colorOf = useMemo(
@@ -57,7 +57,7 @@ export default function Requests() {
 		setPage( 1 );
 	};
 	const filtered =
-		filters.source || filters.status || filters.model || filters.redacted;
+		filters.source || filters.status || filters.model || filters.pii;
 
 	if ( error && ! data ) {
 		return <ErrorNotice error={ error } onRetry={ reload } />;
@@ -69,7 +69,7 @@ export default function Requests() {
 				help="requests"
 				title={ __( 'Requests', 'gatehouse' ) }
 				lede={ __(
-					'A log of every AI call: completed, blocked by a policy, or failed at the provider.',
+					'AI calls made through the WordPress AI Client, and direct calls plugins make to AI providers with their own API key: completed, blocked by a policy, or failed at the provider.',
 					'gatehouse'
 				) }
 			>
@@ -140,14 +140,14 @@ export default function Requests() {
 					} }
 				>
 					<Switch
-						checked={ filters.redacted }
-						onChange={ update( 'redacted' ) }
+						checked={ filters.pii }
+						onChange={ update( 'pii' ) }
 						label={ __(
-							'Only calls with redactions',
+							'Only calls with personal data',
 							'gatehouse'
 						) }
 					/>
-					{ __( 'With redactions', 'gatehouse' ) }
+					{ __( 'With personal data', 'gatehouse' ) }
 				</div>
 				{ filtered && (
 					<Button
@@ -159,7 +159,7 @@ export default function Requests() {
 								source: '',
 								status: '',
 								model: '',
-								redacted: false,
+								pii: false,
 							} );
 							setPage( 1 );
 						} }
@@ -239,7 +239,7 @@ export default function Requests() {
 													'gatehouse'
 												) }
 												tip={ __(
-													'What Gatehouse did to the request. Shield: personal data was replaced with placeholders. Speech bubble: your brand brief was added.',
+													'Personal data in the request. Outlined shield: found and sent unchanged. Filled shield: replaced with placeholders.',
 													'gatehouse'
 												) }
 												align="right"
@@ -429,45 +429,43 @@ function CostCell( { row } ) {
 }
 
 function Flags( { row } ) {
+	const found = Object.values( row.pii || {} ).reduce( ( a, n ) => a + n, 0 );
+	let title = __( 'No personal data found', 'gatehouse' );
+	let label = __( 'No personal data', 'gatehouse' );
+	if ( row.redactions ) {
+		title = sprintf(
+			/* translators: %d: count. */ _n(
+				'%d item of personal data replaced',
+				'%d items of personal data replaced',
+				row.redactions,
+				'gatehouse'
+			),
+			row.redactions
+		);
+		label = __( 'Personal data replaced', 'gatehouse' );
+	} else if ( found ) {
+		title = sprintf(
+			/* translators: %d: count. */ _n(
+				'%d item of personal data found, sent unchanged',
+				'%d items of personal data found, sent unchanged',
+				found,
+				'gatehouse'
+			),
+			found
+		);
+		label = __( 'Personal data sent', 'gatehouse' );
+	}
+	let state = '';
+	if ( row.redactions ) {
+		state = 'is-on';
+	} else if ( found ) {
+		state = 'is-found';
+	}
 	return (
 		<span className="gatehouse-flags">
-			<span
-				className={ row.redactions ? 'is-on' : '' }
-				title={
-					row.redactions
-						? sprintf(
-								/* translators: %d: count. */ _n(
-									'%d item of personal data redacted',
-									'%d items of personal data redacted',
-									row.redactions,
-									'gatehouse'
-								),
-								row.redactions
-						  )
-						: __( 'Nothing redacted', 'gatehouse' )
-				}
-			>
+			<span className={ state } title={ title }>
 				<Icon name="shield" size={ 13 } />
-				<span className="gatehouse-sr">
-					{ row.redactions
-						? __( 'Redacted', 'gatehouse' )
-						: __( 'Not redacted', 'gatehouse' ) }
-				</span>
-			</span>
-			<span
-				className={ row.brief ? 'is-on' : '' }
-				title={
-					row.brief
-						? __( 'Brand brief added', 'gatehouse' )
-						: __( 'No brand brief', 'gatehouse' )
-				}
-			>
-				<Icon name="quote" size={ 13 } />
-				<span className="gatehouse-sr">
-					{ row.brief
-						? __( 'Brief added', 'gatehouse' )
-						: __( 'No brief', 'gatehouse' ) }
-				</span>
+				<span className="gatehouse-sr">{ label }</span>
 			</span>
 		</span>
 	);
@@ -578,15 +576,38 @@ function RequestDrawer( { row, color, onClose } ) {
 						</dd>
 					</>
 				) }
+				<dt>{ __( 'Route', 'gatehouse' ) }</dt>
+				<dd>
+					{ row.channel === 'direct'
+						? __(
+								'Direct: the plugin called the provider with its own API key',
+								'gatehouse'
+						  )
+						: __( 'WordPress AI Client', 'gatehouse' ) }
+				</dd>
 				<dt>{ __( 'Response time', 'gatehouse' ) }</dt>
 				<dd>{ row.latency_ms ? duration( row.latency_ms ) : '–' }</dd>
-				<dt>{ __( 'Redacted items', 'gatehouse' ) }</dt>
-				<dd>{ row.redactions }</dd>
-				<dt>{ __( 'Brand brief', 'gatehouse' ) }</dt>
+				<dt>{ __( 'Personal data', 'gatehouse' ) }</dt>
 				<dd>
-					{ row.brief
-						? __( 'Added', 'gatehouse' )
-						: __( 'Not added', 'gatehouse' ) }
+					{ Object.keys( row.pii || {} ).length
+						? Object.entries( row.pii )
+								.map( ( [ type, n ] ) => `${ type } × ${ n }` )
+								.join( ', ' )
+						: __( 'None found', 'gatehouse' ) }
+				</dd>
+				<dt>{ __( 'Sent to the provider', 'gatehouse' ) }</dt>
+				<dd>
+					{ row.redactions
+						? sprintf(
+								/* translators: %d: count. */ _n(
+									'With %d item replaced by a placeholder',
+									'With %d items replaced by placeholders',
+									row.redactions,
+									'gatehouse'
+								),
+								row.redactions
+						  )
+						: __( 'Unchanged', 'gatehouse' ) }
 				</dd>
 			</dl>
 			{ row.prompt_excerpt || row.response_excerpt ? (
@@ -594,7 +615,7 @@ function RequestDrawer( { row, color, onClose } ) {
 					<div>
 						<h3 className="gatehouse-section-title">
 							{ __(
-								'Prompt (as sent, after redaction)',
+								'Prompt (personal data masked)',
 								'gatehouse'
 							) }
 						</h3>

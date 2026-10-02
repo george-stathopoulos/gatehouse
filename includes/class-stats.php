@@ -48,9 +48,87 @@ final class Gatehouse_Stats {
 			'providers' => self::providers(),
 			'order'     => self::source_order(),
 			'pricing'   => Gatehouse_Pricing::info(),
-			'repeats'   => self::repeats( $start, $now + 1 ),
 			'approval'  => Gatehouse_Compat::connector_approval(),
+			'spikes'    => self::spikes(),
 		);
+	}
+
+	/**
+	 * Sources whose activity right now is far above their own normal level.
+	 *
+	 * - Calls: the last hour has at least 20 calls and 5× the source's average hourly calls over the
+	 *   previous 7 days.
+	 * - Spend: the last 24 hours cost at least $1 and 4× the source's average daily spend over the
+	 *   previous 14 days.
+	 * A source needs 3 days of history first, so a newly installed plugin doesn't raise an alarm.
+	 *
+	 * @return array[] { source, label, kind: calls|spend, now, normal }
+	 */
+	public static function spikes() {
+		global $wpdb;
+		$table = Gatehouse_Ledger::table();
+		$now   = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		$at    = function ( $ts ) {
+			return gmdate( 'Y-m-d H:i:s', $ts );
+		};
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT source,
+					SUM(CASE WHEN created_at >= %s THEN 1 ELSE 0 END) AS calls_hour,
+					SUM(CASE WHEN created_at >= %s AND created_at < %s THEN 1 ELSE 0 END) AS calls_week,
+					SUM(CASE WHEN created_at >= %s THEN cost ELSE 0 END) AS spend_day,
+					SUM(CASE WHEN created_at >= %s AND created_at < %s THEN cost ELSE 0 END) AS spend_prev,
+					MIN(created_at) AS first_seen
+				FROM %i WHERE created_at >= %s AND status <> 'blocked' GROUP BY source",
+				$at( $now - HOUR_IN_SECONDS ),
+				$at( $now - 7 * DAY_IN_SECONDS - HOUR_IN_SECONDS ),
+				$at( $now - HOUR_IN_SECONDS ),
+				$at( $now - DAY_IN_SECONDS ),
+				$at( $now - 15 * DAY_IN_SECONDS ),
+				$at( $now - DAY_IN_SECONDS ),
+				$table,
+				$at( $now - 15 * DAY_IN_SECONDS )
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+
+		$out = array();
+		foreach ( (array) $rows as $r ) {
+			$history = $now - strtotime( $r['first_seen'] );
+			if ( $history < 3 * DAY_IN_SECONDS ) {
+				continue;
+			}
+			$label = Gatehouse_Attribution::label( $r['source'] );
+
+			$hours  = max( 1, min( 7 * 24, ( $history - HOUR_IN_SECONDS ) / HOUR_IN_SECONDS ) );
+			$hourly = (int) $r['calls_week'] / $hours;
+			$calls  = (int) $r['calls_hour'];
+			if ( $calls >= 20 && $calls >= 5 * $hourly ) {
+				$out[] = array(
+					'source' => $r['source'],
+					'label'  => $label,
+					'kind'   => 'calls',
+					'now'    => $calls,
+					'normal' => round( $hourly, 1 ),
+				);
+			}
+
+			$days  = max( 1, min( 14, ( $history - DAY_IN_SECONDS ) / DAY_IN_SECONDS ) );
+			$daily = (float) $r['spend_prev'] / $days;
+			$spend = (float) $r['spend_day'];
+			if ( $spend >= 1 && $spend >= 4 * $daily ) {
+				$out[] = array(
+					'source' => $r['source'],
+					'label'  => $label,
+					'kind'   => 'spend',
+					'now'    => round( $spend, 2 ),
+					'normal' => round( $daily, 2 ),
+				);
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -162,6 +240,7 @@ final class Gatehouse_Stats {
 					SUM(input_tokens) AS input_tokens,
 					SUM(output_tokens) AS output_tokens,
 					SUM(redactions) AS redactions,
+					SUM(CASE WHEN pii <> '' THEN 1 ELSE 0 END) AS pii_calls,
 					SUM(CASE WHEN status = 'ok' THEN latency_ms ELSE 0 END) AS latency_sum,
 					SUM(CASE WHEN status = 'ok' AND priced = 0 THEN 1 ELSE 0 END) AS unpriced,
 					SUM(cached) AS cached,
@@ -192,6 +271,7 @@ final class Gatehouse_Stats {
 			'tokens'       => (int) ( $r['input_tokens'] ?? 0 ) + (int) ( $r['output_tokens'] ?? 0 ),
 			'input_tokens' => (int) ( $r['input_tokens'] ?? 0 ),
 			'redactions'   => (int) ( $r['redactions'] ?? 0 ),
+			'pii_calls'    => (int) ( $r['pii_calls'] ?? 0 ),
 			'avg_cost'     => $ok ? round( (float) ( $r['cost'] ?? 0 ) / $ok, 6 ) : 0,
 			'avg_latency'  => $ok ? (int) round( (int) ( $r['latency_sum'] ?? 0 ) / $ok ) : 0,
 			'unpriced'     => (int) ( $r['unpriced'] ?? 0 ),
@@ -216,7 +296,7 @@ final class Gatehouse_Stats {
 			$wpdb->prepare(
 				"SELECT SUBSTRING(created_at, 1, 10) AS day, source,
 					COUNT(*) AS requests, SUM(cost) AS cost,
-					SUM(input_tokens + output_tokens) AS tokens, SUM(redactions) AS redactions,
+					SUM(input_tokens + output_tokens) AS tokens, SUM(CASE WHEN pii <> '' THEN 1 ELSE 0 END) AS pii_calls,
 					SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END) AS blocked
 				FROM %i WHERE created_at >= %s AND created_at < %s
 				GROUP BY SUBSTRING(created_at, 1, 10), source", $table,
@@ -243,7 +323,7 @@ final class Gatehouse_Stats {
 		$meta  = array(
 			'requests'   => $blank,
 			'tokens'     => $blank,
-			'redactions' => $blank,
+			'pii_calls'  => $blank,
 			'blocked'    => $blank,
 			'cost'       => $blank,
 		);
@@ -256,7 +336,7 @@ final class Gatehouse_Stats {
 			$cost[ $key ][ $r['day'] ]   += (float) $r['cost'];
 			$meta['requests'][ $r['day'] ]   += (int) $r['requests'];
 			$meta['tokens'][ $r['day'] ]     += (int) $r['tokens'];
-			$meta['redactions'][ $r['day'] ] += (int) $r['redactions'];
+			$meta['pii_calls'][ $r['day'] ]  += (int) $r['pii_calls'];
 			$meta['blocked'][ $r['day'] ]    += (int) $r['blocked'];
 			$meta['cost'][ $r['day'] ]       += (float) $r['cost'];
 		}
@@ -283,7 +363,7 @@ final class Gatehouse_Stats {
 			'stack'      => $stack,
 			'requests'   => array_values( $meta['requests'] ),
 			'tokens'     => array_values( $meta['tokens'] ),
-			'redactions' => array_values( $meta['redactions'] ),
+			'pii_calls'  => array_values( $meta['pii_calls'] ),
 			'blocked'    => array_values( $meta['blocked'] ),
 			'cost'       => array_map(
 				function ( $v ) {
@@ -309,6 +389,7 @@ final class Gatehouse_Stats {
 			$wpdb->prepare(
 				"SELECT source, COUNT(*) AS requests, SUM(cost) AS cost,
 					SUM(input_tokens + output_tokens) AS tokens, SUM(redactions) AS redactions,
+					SUM(CASE WHEN pii <> '' THEN 1 ELSE 0 END) AS pii_calls,
 					SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
 					SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) AS errors,
 					MAX(created_at) AS last_seen
@@ -368,6 +449,7 @@ final class Gatehouse_Stats {
 			'cost'       => round( (float) ( $r['cost'] ?? 0 ), 6 ),
 			'tokens'     => (int) ( $r['tokens'] ?? 0 ),
 			'redactions' => (int) ( $r['redactions'] ?? 0 ),
+			'pii_calls'  => (int) ( $r['pii_calls'] ?? 0 ),
 			'blocked'    => (int) ( $r['blocked'] ?? 0 ),
 			'errors'     => (int) ( $r['errors'] ?? 0 ),
 			'last_seen'  => $r['last_seen'] ?? null,
@@ -375,21 +457,29 @@ final class Gatehouse_Stats {
 			'month'      => round( $spend, 6 ),
 			'forecast'   => round( $fc, 6 ),
 			'policy'     => $policy,
-			'status'     => self::source_status( $policy, $spend, $fc ),
+			'status'     => self::source_status( $policy, $spend, $fc, $source ),
+			'last_hour'  => Gatehouse_Ledger::calls_last_hour( $source ),
+			'rate_limit' => Gatehouse_Settings::rate_limit_for( $source ),
 		);
 	}
 
 	/**
-	 * Status of a source: `active`, `forecast` (on pace to exceed), `near`, `capped` or `paused`.
+	 * Status of a source: `active`, `forecast` (on pace to exceed), `near`, `capped`, `limited`
+	 * (hit its hourly call limit) or `paused`.
 	 *
-	 * @param array $policy   Policy.
-	 * @param float $spend    Month-to-date spend.
-	 * @param float $forecast Month-end forecast.
+	 * @param array  $policy   Policy.
+	 * @param float  $spend    Month-to-date spend.
+	 * @param float  $forecast Month-end forecast.
+	 * @param string $source   Source id.
 	 * @return string
 	 */
-	private static function source_status( array $policy, $spend, $forecast ) {
+	private static function source_status( array $policy, $spend, $forecast, $source = '' ) {
 		if ( $policy['paused'] ) {
 			return 'paused';
+		}
+		$limit = Gatehouse_Settings::rate_limit_for( $source );
+		if ( $limit > 0 && Gatehouse_Ledger::calls_last_hour( $source ) >= $limit ) {
+			return 'limited';
 		}
 		if ( $policy['budget'] > 0 ) {
 			$pct = $spend / $policy['budget'] * 100;
@@ -548,8 +638,7 @@ final class Gatehouse_Stats {
 	}
 
 	/**
-	 * Volume context for the settings screens: 30-day calls, average input price and
-	 * redactions, used to estimate what the brand brief adds to the bill.
+	 * Volume context for the settings screens: 30-day calls, average input price and personal data.
 	 *
 	 * @return array
 	 */
@@ -571,7 +660,8 @@ final class Gatehouse_Stats {
 			'calls_30d'       => $kpis['ok'],
 			'avg_input_price' => $calls ? round( $price / $calls, 4 ) : 0,
 			'redactions_30d'  => $kpis['redactions'],
-			'redacted_calls'  => self::redacted_calls( $from, $now + 1 ),
+			'pii_calls_30d'   => $kpis['pii_calls'],
+			'privacy'         => self::privacy_report( $from, $now + 1 ),
 			'sources'         => array_map(
 				function ( $s ) {
 					return array(
@@ -587,17 +677,155 @@ final class Gatehouse_Stats {
 	}
 
 	/**
-	 * Number of calls with at least one redaction.
+	 * Personal data found in requests, per source: how many calls carried it, of which types, and
+	 * whether the source has redaction turned on.
 	 *
 	 * @param int $from Start timestamp.
 	 * @param int $to   End timestamp.
-	 * @return int
+	 * @return array
 	 */
-	private static function redacted_calls( $from, $to ) {
+	public static function privacy_report( $from, $to ) {
 		global $wpdb;
 		$table = Gatehouse_Ledger::table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE redactions > 0 AND created_at >= %s AND created_at < %s", $table, gmdate( 'Y-m-d H:i:s', $from ), gmdate( 'Y-m-d H:i:s', $to ) ) );
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT source, pii, COUNT(*) AS calls, SUM(redactions) AS redactions
+				FROM %i WHERE created_at >= %s AND created_at < %s AND status <> 'blocked'
+				GROUP BY source, pii", $table,
+				gmdate( 'Y-m-d H:i:s', $from ),
+				gmdate( 'Y-m-d H:i:s', $to )
+			),
+			ARRAY_A
+		);
+
+		$out = array();
+		foreach ( (array) $rows as $r ) {
+			$id = $r['source'];
+			if ( ! isset( $out[ $id ] ) ) {
+				$out[ $id ] = array(
+					'id'         => $id,
+					'label'      => Gatehouse_Attribution::label( $id ),
+					'type'       => Gatehouse_Attribution::type( $id ),
+					'calls'      => 0,
+					'pii_calls'  => 0,
+					'redactions' => 0,
+					'types'      => array(),
+					'redact'     => (bool) Gatehouse_Settings::source( $id )['redact'],
+				);
+			}
+			$calls                     = (int) $r['calls'];
+			$out[ $id ]['calls']      += $calls;
+			$out[ $id ]['redactions'] += (int) $r['redactions'];
+			if ( '' !== $r['pii'] ) {
+				$out[ $id ]['pii_calls'] += $calls;
+				foreach ( Gatehouse_Redactor::decode_counts( $r['pii'] ) as $type => $n ) {
+					$out[ $id ]['types'][ $type ] = ( $out[ $id ]['types'][ $type ] ?? 0 ) + $n * $calls;
+				}
+			}
+		}
+
+		$out = array_values( $out );
+		usort(
+			$out,
+			function ( $a, $b ) {
+				return $b['pii_calls'] <=> $a['pii_calls'] ?: $b['calls'] <=> $a['calls'];
+			}
+		);
+		return $out;
+	}
+
+	/**
+	 * AI data map: per source, the providers, models and routes it used, its volume and spend,
+	 * the personal data found in its requests and the controls that apply to it.
+	 *
+	 * @param int $from Start timestamp.
+	 * @param int $to   End timestamp.
+	 * @return array[]
+	 */
+	public static function data_map( $from, $to ) {
+		global $wpdb;
+		$table = Gatehouse_Ledger::table();
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT source, provider, model, channel,
+					SUM(CASE WHEN status <> 'blocked' THEN 1 ELSE 0 END) AS calls,
+					SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END) AS blocked,
+					SUM(cost) AS cost, SUM(redactions) AS redactions,
+					MIN(created_at) AS first_seen, MAX(created_at) AS last_seen
+				FROM %i WHERE created_at >= %s AND created_at < %s
+				GROUP BY source, provider, model, channel", $table,
+				gmdate( 'Y-m-d H:i:s', $from ),
+				gmdate( 'Y-m-d H:i:s', $to )
+			),
+			ARRAY_A
+		);
+
+		$privacy = array();
+		foreach ( self::privacy_report( $from, $to ) as $p ) {
+			$privacy[ $p['id'] ] = $p;
+		}
+
+		$out = array();
+		foreach ( (array) $rows as $r ) {
+			$id = $r['source'];
+			if ( ! isset( $out[ $id ] ) ) {
+				$policy     = Gatehouse_Settings::source( $id );
+				$out[ $id ] = array(
+					'id'          => $id,
+					'label'       => Gatehouse_Attribution::label( $id ),
+					'type'        => Gatehouse_Attribution::type( $id ),
+					'providers'   => array(),
+					'models'      => array(),
+					'routes'      => array(),
+					'calls'       => 0,
+					'blocked'     => 0,
+					'cost'        => 0.0,
+					'pii_calls'   => (int) ( $privacy[ $id ]['pii_calls'] ?? 0 ),
+					'pii_types'   => $privacy[ $id ]['types'] ?? array(),
+					'redact'      => (bool) $policy['redact'],
+					'redactions'  => 0,
+					'budget'      => (float) $policy['budget'],
+					'rate_limit'  => Gatehouse_Settings::rate_limit_for( $id ),
+					'paused'      => (bool) $policy['paused'],
+					'first_seen'  => $r['first_seen'],
+					'last_seen'   => $r['last_seen'],
+				);
+			}
+			$row = &$out[ $id ];
+			if ( '' !== $r['provider'] ) {
+				$row['providers'][ $r['provider'] ] = true;
+			}
+			if ( '' !== $r['model'] ) {
+				$row['models'][ $r['model'] ] = true;
+			}
+			$row['routes'][ 'direct' === $r['channel'] ? 'direct' : 'ai_client' ] = true;
+			$row['calls']      += (int) $r['calls'];
+			$row['blocked']    += (int) $r['blocked'];
+			$row['cost']       += (float) $r['cost'];
+			$row['redactions'] += (int) $r['redactions'];
+			$row['first_seen']  = min( $row['first_seen'], $r['first_seen'] );
+			$row['last_seen']   = max( $row['last_seen'], $r['last_seen'] );
+			unset( $row );
+		}
+
+		foreach ( $out as &$row ) {
+			$row['providers'] = array_keys( $row['providers'] );
+			$row['models']    = array_keys( $row['models'] );
+			$row['routes']    = array_keys( $row['routes'] );
+			$row['cost']      = round( $row['cost'], 6 );
+		}
+		unset( $row );
+
+		$out = array_values( $out );
+		usort(
+			$out,
+			function ( $a, $b ) {
+				return $b['pii_calls'] <=> $a['pii_calls'] ?: $b['calls'] <=> $a['calls'];
+			}
+		);
+		return $out;
 	}
 
 	/**
@@ -649,14 +877,14 @@ final class Gatehouse_Stats {
 		$source = ! empty( $args['source'] ) ? Gatehouse_Settings::source_id( $args['source'] ) : '';
 		$status = ! empty( $args['status'] ) && in_array( $args['status'], array( 'ok', 'blocked', 'error' ), true ) ? $args['status'] : '';
 		$model  = ! empty( $args['model'] ) ? sanitize_text_field( $args['model'] ) : '';
-		$only_r = ! empty( $args['redacted'] ) ? 1 : 0;
+		$only_r = ! empty( $args['pii'] ) ? 1 : 0;
 		$offset = ( $page - 1 ) * $per_page;
 
 		// One fixed query; an empty filter value switches its condition off.
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$total = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM %i WHERE ( %s = '' OR source = %s ) AND ( %s = '' OR status = %s ) AND ( %s = '' OR model = %s ) AND ( %d = 0 OR redactions > 0 )",
+				"SELECT COUNT(*) FROM %i WHERE ( %s = '' OR source = %s ) AND ( %s = '' OR status = %s ) AND ( %s = '' OR model = %s ) AND ( %d = 0 OR pii <> '' )",
 				$table,
 				$source,
 				$source,
@@ -669,7 +897,7 @@ final class Gatehouse_Stats {
 		);
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM %i WHERE ( %s = '' OR source = %s ) AND ( %s = '' OR status = %s ) AND ( %s = '' OR model = %s ) AND ( %d = 0 OR redactions > 0 ) ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d",
+				"SELECT * FROM %i WHERE ( %s = '' OR source = %s ) AND ( %s = '' OR status = %s ) AND ( %s = '' OR model = %s ) AND ( %d = 0 OR pii <> '' ) ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d",
 				$table,
 				$source,
 				$source,
@@ -700,7 +928,8 @@ final class Gatehouse_Stats {
 			$row['priced']        = (bool) $row['priced'];
 			$row['latency_ms']    = (int) $row['latency_ms'];
 			$row['redactions']    = (int) $row['redactions'];
-			$row['brief']         = (bool) $row['brief'];
+			$row['pii']           = Gatehouse_Redactor::decode_counts( (string) ( $row['pii'] ?? '' ) );
+			unset( $row['brief'] );
 			$row['cached']        = (bool) $row['cached'];
 			$row['saved']         = (float) $row['saved'];
 			unset( $row['prompt_hash'] );

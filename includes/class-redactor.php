@@ -78,11 +78,13 @@ final class Gatehouse_Redactor {
 	private function patterns() {
 		$all = array(
 			'email' => array( 'EMAIL', '/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i' ),
+			// Candidates only: IBANs must pass the mod-97 checksum, cards a known prefix and Luhn.
 			'iban'  => array( 'IBAN', '/\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,3})?\b/' ),
 			'card'  => array( 'CARD', '/\b(?:\d[ \-]?){12,18}\d\b/' ),
 			'ssn'   => array( 'SSN', '/\b\d{3}-\d{2}-\d{4}\b/' ),
 			'ip'    => array( 'IP', '/\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/' ),
-			// Grouped numbers such as "+1 415 555 0134", "(020) 7946 0958" or "415-555-0134".
+			// Grouped numbers such as "+1 415 555 0134", "(020) 7946 0958" or "Call 415-555-0134".
+			// Without "+" or "(" a number also needs a word such as "phone" or "call" just before it.
 			'phone' => array( 'PHONE', '/(?<![\w@.\-])(?:\+\d{1,3}[ \-.]?)?(?:\(\d{1,4}\)[ \-.]?)?\d{2,5}(?:[ \-.]\d{2,5}){1,4}(?![\w.\-]?\d)/' ),
 		);
 		$out = array();
@@ -107,33 +109,46 @@ final class Gatehouse_Redactor {
 
 		foreach ( (array) ( $this->config['custom'] ?? array() ) as $term ) {
 			if ( '' !== $term && false !== stripos( $text, $term ) ) {
-				$text = preg_replace_callback(
-					'/' . preg_quote( $term, '/' ) . '/i',
+				// Whole words only: the term "Ann" must not match "annual" or "planned".
+				$replaced = preg_replace_callback(
+					'/(?<![\p{L}\p{N}])' . preg_quote( $term, '/' ) . '(?![\p{L}\p{N}])/iu',
 					function ( $m ) {
 						return $this->placeholder( 'TERM', $m[0] );
 					},
 					$text
 				);
+				// null means the text isn't valid UTF-8; leave it as it is rather than losing it.
+				if ( null !== $replaced ) {
+					$text = $replaced;
+				}
 			}
 		}
 
 		foreach ( $this->patterns() as $type => $regex ) {
-			$text = preg_replace_callback(
+			$source = $text;
+			$text   = preg_replace_callback(
 				$regex,
-				function ( $m ) use ( $type ) {
+				function ( $m ) use ( $type, $source ) {
+					$value = $m[0][0];
 					// Leave placeholders created by an earlier detector alone.
-					if ( isset( $this->map[ $m[0] ] ) ) {
-						return $m[0];
+					if ( isset( $this->map[ $value ] ) ) {
+						return $value;
 					}
-					if ( 'CARD' === $type && ! self::luhn( $m[0] ) ) {
-						return $m[0];
+					if ( 'CARD' === $type && ! self::looks_like_card( $value ) ) {
+						return $value;
 					}
-					if ( 'PHONE' === $type && ! self::looks_like_phone( $m[0] ) ) {
-						return $m[0];
+					if ( 'IBAN' === $type && ! self::valid_iban( $value ) ) {
+						return $value;
 					}
-					return $this->placeholder( $type, $m[0] );
+					if ( 'PHONE' === $type && ! self::looks_like_phone( $value, substr( $source, max( 0, $m[0][1] - 40 ), min( 40, $m[0][1] ) ) ) ) {
+						return $value;
+					}
+					return $this->placeholder( $type, $value );
 				},
-				$text
+				$text,
+				-1,
+				$count,
+				PREG_OFFSET_CAPTURE
 			);
 		}
 
@@ -182,7 +197,62 @@ final class Gatehouse_Redactor {
 		foreach ( $this->map as $token => $original ) {
 			$pairs[ $token ] = substr( wp_json_encode( $original ), 1, -1 );
 		}
-		return strtr( $body, $pairs );
+		$body = strtr( $body, $pairs );
+
+		// Models sometimes rewrite a placeholder slightly ("[EMAIL 1]", "[email_1]", "EMAIL_1").
+		// Put those back too, so a placeholder never ends up in published content.
+		return (string) preg_replace_callback(
+			'/\[\s*(EMAIL|PHONE|CARD|IBAN|SSN|IP|TERM)[ _\-]?(\d+)\s*\]|\b(EMAIL|PHONE|CARD|IBAN|SSN|IP|TERM)_(\d+)\b/i',
+			function ( $m ) use ( $pairs ) {
+				$type  = strtoupper( '' !== $m[1] ? $m[1] : $m[3] );
+				$token = '[' . $type . '_' . ( '' !== $m[2] ? $m[2] : $m[4] ) . ']';
+				return isset( $pairs[ $token ] ) ? $pairs[ $token ] : $m[0];
+			},
+			$body
+		);
+	}
+
+	/**
+	 * Placeholders that survived restoring (the model changed them beyond recognition).
+	 *
+	 * @param string $text Restored text.
+	 * @return int
+	 */
+	public static function leftover( $text ) {
+		return (int) preg_match_all( '/\[(?:EMAIL|PHONE|CARD|IBAN|SSN|IP|TERM)_\d+\]/', (string) $text );
+	}
+
+	/**
+	 * Detected values per type as a compact string for the log, e.g. "email:2,phone:1".
+	 *
+	 * @param array<string,int> $counts Counts keyed by placeholder type.
+	 * @return string
+	 */
+	public static function encode_counts( array $counts ) {
+		$parts = array();
+		foreach ( $counts as $type => $n ) {
+			if ( $n > 0 ) {
+				$parts[] = strtolower( $type ) . ':' . (int) $n;
+			}
+		}
+		return implode( ',', $parts );
+	}
+
+	/**
+	 * Inverse of encode_counts().
+	 *
+	 * @param string $encoded Encoded counts.
+	 * @return array<string,int>
+	 */
+	public static function decode_counts( $encoded ) {
+		$out = array();
+		foreach ( array_filter( explode( ',', (string) $encoded ) ) as $part ) {
+			$bits = explode( ':', $part );
+			if ( 2 === count( $bits ) && '' !== $bits[0] ) {
+				$out[ $bits[0] ] = ( $out[ $bits[0] ] ?? 0 ) + (int) $bits[1];
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -227,9 +297,19 @@ final class Gatehouse_Redactor {
 	 * @param string $match Candidate.
 	 * @return bool
 	 */
-	private static function looks_like_phone( $match ) {
+	private static function looks_like_phone( $match, $before = '' ) {
 		$digits = strlen( preg_replace( '/\D/', '', $match ) );
 		if ( $digits < 8 || $digits > 15 ) {
+			return false;
+		}
+		$international = false !== strpos( $match, '+' ) || false !== strpos( $match, '(' );
+		// Thousands such as "12 500 000" or "1,250,000" are amounts.
+		if ( ! $international && preg_match( '/^\d{1,3}(?:[ .,]\d{3})+$/', $match ) ) {
+			return false;
+		}
+		// Without "+" or "(", only a nearby word makes a grouped number a phone number; otherwise it is
+		// far more often an order, SKU or list of IDs.
+		if ( ! $international && ! preg_match( '/(?:phone|tel\b|tel\.|telephone|call|mobile|cell|fax|whats\s?app|sms|text me|contact|τηλ|κινητ)[^\d\n]{0,15}$/iu', (string) $before ) ) {
 			return false;
 		}
 		// Dates: 2026-10-01, 01.10.2026, 2026 10 01.
@@ -241,6 +321,45 @@ final class Gatehouse_Redactor {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * A card number: 13 to 19 digits, a known card prefix and a valid Luhn checksum.
+	 *
+	 * @param string $match Candidate.
+	 * @return bool
+	 */
+	private static function looks_like_card( $match ) {
+		$digits = preg_replace( '/\D/', '', $match );
+		$len    = strlen( $digits );
+		if ( $len < 13 || $len > 19 ) {
+			return false;
+		}
+		// Visa, Mastercard, American Express, Discover, Diners Club, JCB, UnionPay, Maestro.
+		if ( ! preg_match( '/^(?:4|5[1-5]|2[2-7]|3[47]|6(?:011|5|4[4-9]|2)|3(?:0[0-5]|[689])|35|5[06-9])/', $digits ) ) {
+			return false;
+		}
+		return self::luhn( $digits );
+	}
+
+	/**
+	 * IBAN with a valid ISO 13616 mod-97 checksum.
+	 *
+	 * @param string $match Candidate.
+	 * @return bool
+	 */
+	private static function valid_iban( $match ) {
+		$iban = strtoupper( preg_replace( '/\s+/', '', $match ) );
+		if ( strlen( $iban ) < 15 || strlen( $iban ) > 34 || ! preg_match( '/^[A-Z]{2}\d{2}[A-Z0-9]+$/', $iban ) ) {
+			return false;
+		}
+		$moved     = substr( $iban, 4 ) . substr( $iban, 0, 4 );
+		$remainder = 0;
+		foreach ( str_split( $moved ) as $char ) {
+			$chunk     = ctype_alpha( $char ) ? (string) ( ord( $char ) - 55 ) : $char;
+			$remainder = (int) ( ( $remainder . $chunk ) % 97 );
+		}
+		return 1 === $remainder;
 	}
 
 	/**

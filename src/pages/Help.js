@@ -35,7 +35,7 @@ const GUIDES = [
 		icon: 'requests',
 		title: __( 'Requests', 'gatehouse' ),
 		text: __(
-			'A log of every AI call: completed, blocked by a budget, pause or approval, or failed at the provider. Click a row for details.',
+			'A log of the AI calls Gatehouse can see: those made through the WordPress AI Client, and direct calls plugins make to AI providers with their own API key. Completed, blocked by a budget, pause or approval, or failed at the provider. Click a row for details.',
 			'gatehouse'
 		),
 	},
@@ -45,17 +45,7 @@ const GUIDES = [
 		icon: 'shield',
 		title: __( 'Privacy', 'gatehouse' ),
 		text: __(
-			'Choose what personal data is removed from prompts, add your own terms, and test it live.',
-			'gatehouse'
-		),
-	},
-	{
-		id: 'brief',
-		route: 'brief',
-		icon: 'quote',
-		title: __( 'Brand brief', 'gatehouse' ),
-		text: __(
-			'One set of instructions added to every AI request, so every plugin writes in your voice and follows your rules.',
+			'See which plugins send personal data to AI providers, and turn on redaction for the ones that don’t need it.',
 			'gatehouse'
 		),
 	},
@@ -173,7 +163,7 @@ const FAQ = [
 			'gatehouse'
 		),
 		a: __(
-			'The AI model changed the placeholder, so it couldn’t be put back. Turn on “Skip redaction” for that plugin on the Sources page if this keeps happening.',
+			'The AI model changed the placeholder so much that it couldn’t be recognised and put back. If this keeps happening for a plugin, turn off redaction for it on the Privacy page.',
 			'gatehouse'
 		),
 	},
@@ -236,16 +226,16 @@ const GLOSSARY = [
 		),
 	],
 	[
-		__( 'Redaction', 'gatehouse' ),
+		__( 'Personal data detection', 'gatehouse' ),
 		__(
-			'Replacing personal data with placeholders such as [EMAIL_1] before a prompt leaves your site, and putting the real values back in the answer.',
+			'Checking each AI request for emails, phone numbers and other personal data, and recording what kind was found (never the values). It changes nothing.',
 			'gatehouse'
 		),
 	],
 	[
-		__( 'Brand brief', 'gatehouse' ),
+		__( 'Redaction', 'gatehouse' ),
 		__(
-			'Instructions added to every AI request so all plugins follow the same voice and rules.',
+			'Replacing personal data with placeholders such as [EMAIL_1] before a request leaves your site, and putting the real values back in the answer. Off by default; you turn it on per plugin. It is pattern-based, so it reduces personal data rather than removing all of it.',
 			'gatehouse'
 		),
 	],
@@ -253,13 +243,6 @@ const GLOSSARY = [
 		__( 'Blocked', 'gatehouse' ),
 		__(
 			'A call stopped before reaching the provider: by a pause, a budget, or Connector Approval.',
-			'gatehouse'
-		),
-	],
-	[
-		__( 'Repeated request', 'gatehouse' ),
-		__(
-			'A call identical to an earlier one. A response cache (Gatehouse Pro) can answer these without paying again.',
 			'gatehouse'
 		),
 	],

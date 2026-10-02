@@ -96,12 +96,6 @@ final class Gatehouse_Admin {
 					 * @param bool $active Active.
 					 */
 					'pro'           => (bool) apply_filters( 'gatehouse_pro_active', false ),
-					/**
-					 * Filters the address of the Gatehouse Pro page shown in the dashboard. Empty hides the link.
-					 *
-					 * @param string $url URL.
-					 */
-					'proUrl'        => esc_url_raw( (string) apply_filters( 'gatehouse_pro_url', GATEHOUSE_SITE . 'pro/' ) ),
 				)
 			) . ';',
 			'before'

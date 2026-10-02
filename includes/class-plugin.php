@@ -71,6 +71,7 @@ final class Gatehouse_Plugin {
 	 */
 	public static function deactivate() {
 		wp_clear_scheduled_hook( self::PRUNE_HOOK );
+		wp_clear_scheduled_hook( Gatehouse_Alerts::SPIKE_HOOK );
 		wp_clear_scheduled_hook( Gatehouse_Price_Sync::CRON );
 	}
 }

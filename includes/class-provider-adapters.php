@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Recognises outgoing AI provider requests and adds the brand brief in each provider's format.
+ * Recognises outgoing AI provider requests and their text format.
  */
 final class Gatehouse_Provider_Adapters {
 
@@ -27,6 +27,13 @@ final class Gatehouse_Provider_Adapters {
 				'api.anthropic.com'                 => 'anthropic',
 				'api.openai.com'                    => 'openai',
 				'generativelanguage.googleapis.com' => 'google',
+				// OpenAI-compatible APIs that plugins call directly with their own keys.
+				'openrouter.ai'                     => 'openrouter',
+				'api.x.ai'                          => 'xai',
+				'api.mistral.ai'                    => 'mistral',
+				'api.deepseek.com'                  => 'deepseek',
+				'api.groq.com'                      => 'groq',
+				'api.perplexity.ai'                 => 'perplexity',
 			)
 		);
 	}
@@ -78,72 +85,71 @@ final class Gatehouse_Provider_Adapters {
 	}
 
 	/**
-	 * Append the brief to the system prompt of a decoded request body.
+	 * Model and token usage from a provider response body, plain JSON or a streamed (SSE) body.
 	 *
-	 * @param array  $body   Decoded body.
-	 * @param string $format Format from text_format().
-	 * @param string $brief  Brief text.
-	 * @return array
+	 * Handles the Anthropic Messages API, the OpenAI Chat Completions and Responses APIs (and
+	 * OpenAI-compatible APIs) and Google's generateContent. For a stream, the usage the provider
+	 * reports in its events is used; it is missing when the calling plugin read the stream itself.
+	 *
+	 * @param string $body Response body.
+	 * @return array{model:string,input:int,output:int,found:bool}
 	 */
-	public static function add_brief( array $body, $format, $brief ) {
-		$brief = trim( (string) $brief );
-		if ( '' === $brief ) {
-			return $body;
+	public static function usage_from_body( $body ) {
+		$out    = array(
+			'model'  => '',
+			'input'  => 0,
+			'output' => 0,
+			'found'  => false,
+		);
+		$body   = (string) $body;
+		$events = array();
+		$json   = json_decode( $body, true );
+		if ( is_array( $json ) ) {
+			// Google can return a JSON array of chunks.
+			$events = wp_is_numeric_array( $json ) ? $json : array( $json );
+		} elseif ( false !== strpos( $body, 'data:' ) ) {
+			foreach ( preg_split( '/\r?\n/', $body ) as $line ) {
+				if ( 0 === strpos( $line, 'data:' ) ) {
+					$event = json_decode( trim( substr( $line, 5 ) ), true );
+					if ( is_array( $event ) ) {
+						$events[] = $event;
+					}
+				}
+			}
 		}
 
-		switch ( $format ) {
-			case 'anthropic':
-				if ( isset( $body['system'] ) && is_array( $body['system'] ) ) {
-					$body['system'][] = array(
-						'type' => 'text',
-						'text' => $brief,
-					);
-				} else {
-					$body['system'] = self::join( $body['system'] ?? '', $brief );
+		foreach ( $events as $event ) {
+			if ( ! is_array( $event ) ) {
+				continue;
+			}
+			foreach ( array( $event, $event['response'] ?? null, $event['message'] ?? null ) as $node ) {
+				if ( ! is_array( $node ) ) {
+					continue;
 				}
-				break;
-
-			case 'openai-responses':
-				$body['instructions'] = self::join( $body['instructions'] ?? '', $brief );
-				break;
-
-			case 'openai-chat':
-				$messages = isset( $body['messages'] ) && is_array( $body['messages'] ) ? $body['messages'] : array();
-				if ( isset( $messages[0]['role'] ) && in_array( $messages[0]['role'], array( 'system', 'developer' ), true ) && is_string( $messages[0]['content'] ) ) {
-					$messages[0]['content'] = self::join( $messages[0]['content'], $brief );
-				} else {
-					array_unshift(
-						$messages,
-						array(
-							'role'    => 'system',
-							'content' => $brief,
-						)
-					);
+				foreach ( array( 'model', 'modelVersion' ) as $key ) {
+					if ( '' === $out['model'] && ! empty( $node[ $key ] ) && is_string( $node[ $key ] ) ) {
+						$out['model'] = $node[ $key ];
+					}
 				}
-				$body['messages'] = $messages;
-				break;
-
-			case 'google':
-				$key = isset( $body['system_instruction'] ) ? 'system_instruction' : 'systemInstruction';
-				if ( ! isset( $body[ $key ]['parts'] ) || ! is_array( $body[ $key ]['parts'] ) ) {
-					$body[ $key ] = array( 'parts' => array() );
+				$u = isset( $node['usage'] ) && is_array( $node['usage'] ) ? $node['usage'] : null;
+				if ( $u ) {
+					// Anthropic: cached input is billed too, so it counts as input here.
+					$in  = (int) ( $u['input_tokens'] ?? $u['prompt_tokens'] ?? 0 ) + (int) ( $u['cache_creation_input_tokens'] ?? 0 ) + (int) ( $u['cache_read_input_tokens'] ?? 0 );
+					$gen = (int) ( $u['output_tokens'] ?? $u['completion_tokens'] ?? 0 );
+					if ( $in || $gen ) {
+						$out['input']  = max( $out['input'], $in );
+						$out['output'] = max( $out['output'], $gen );
+						$out['found']  = true;
+					}
 				}
-				$body[ $key ]['parts'][] = array( 'text' => $brief );
-				break;
+				$g = isset( $node['usageMetadata'] ) && is_array( $node['usageMetadata'] ) ? $node['usageMetadata'] : null;
+				if ( $g ) {
+					$out['input']  = max( $out['input'], (int) ( $g['promptTokenCount'] ?? 0 ) );
+					$out['output'] = max( $out['output'], (int) ( $g['candidatesTokenCount'] ?? 0 ) + (int) ( $g['thoughtsTokenCount'] ?? 0 ) );
+					$out['found']  = true;
+				}
+			}
 		}
-
-		return $body;
-	}
-
-	/**
-	 * Join an existing system prompt and the brief.
-	 *
-	 * @param string $existing Existing text.
-	 * @param string $brief    Brief.
-	 * @return string
-	 */
-	private static function join( $existing, $brief ) {
-		$existing = is_string( $existing ) ? trim( $existing ) : '';
-		return '' === $existing ? $brief : $existing . "\n\n" . $brief;
+		return $out;
 	}
 }

@@ -99,7 +99,7 @@ final class Gatehouse_REST_Controller {
 							'enum' => array( '', 'ok', 'blocked', 'error' ),
 						),
 						'model'    => array( 'type' => 'string' ),
-						'redacted' => array( 'type' => 'boolean' ),
+						'pii'      => array( 'type' => 'boolean' ),
 					),
 				),
 				array(
@@ -179,6 +179,24 @@ final class Gatehouse_REST_Controller {
 
 		register_rest_route(
 			self::NS,
+			'/data-map',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( __CLASS__, 'data_map' ),
+				'permission_callback' => $admin,
+				'args'                => array(
+					'days' => array(
+						'type'    => 'integer',
+						'default' => 90,
+						'minimum' => 1,
+						'maximum' => 3650,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/redact-preview',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -220,6 +238,28 @@ final class Gatehouse_REST_Controller {
 	 * @param WP_REST_Request $request Request.
 	 * @return WP_REST_Response
 	 */
+	/**
+	 * GET /data-map: which plugins send what to which AI providers, for records and reports.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public static function data_map( WP_REST_Request $request ) {
+		$now   = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		$start = strtotime( gmdate( 'Y-m-d', $now ) ) - ( (int) $request['days'] - 1 ) * DAY_IN_SECONDS;
+		return rest_ensure_response(
+			array(
+				'site'      => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+				'url'       => home_url( '/' ),
+				'from'      => gmdate( 'Y-m-d', $start ),
+				'to'        => gmdate( 'Y-m-d', $now ),
+				'generated' => gmdate( 'Y-m-d H:i', $now ),
+				'detection' => (bool) Gatehouse_Settings::get( 'redaction' )['enabled'],
+				'sources'   => Gatehouse_Stats::data_map( $start, $now + 1 ),
+			)
+		);
+	}
+
 	public static function sources( WP_REST_Request $request ) {
 		$now   = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
 		$start = strtotime( gmdate( 'Y-m-d', $now ) ) - ( (int) $request['days'] - 1 ) * DAY_IN_SECONDS;
@@ -319,7 +359,7 @@ final class Gatehouse_REST_Controller {
 	 */
 	public static function complete_setup( WP_REST_Request $request ) {
 		$input = $request->get_json_params();
-		$input = is_array( $input ) ? array_intersect_key( $input, array_flip( array( 'global_budget', 'alerts', 'redaction', 'prices_auto' ) ) ) : array();
+		$input = is_array( $input ) ? array_intersect_key( $input, array_flip( array( 'global_budget', 'rate_limit', 'alerts', 'redaction', 'prices_auto' ) ) ) : array();
 		if ( $input ) {
 			Gatehouse_Settings::update( $input );
 		}

@@ -10,6 +10,7 @@ import {
 	ErrorNotice,
 	Setting,
 	MoneyInput,
+	CountInput,
 	Button,
 	useToast,
 	Loading,
@@ -66,7 +67,7 @@ export default function Settings() {
 								'gatehouse'
 							) }
 							desc={ __(
-								'All AI calls stop when total spend reaches this amount. Leave empty for no limit.',
+								'AI calls Gatehouse can see stop when total spend reaches this amount. Streamed answers whose cost isn’t known don’t count towards it. Leave empty for no limit.',
 								'gatehouse'
 							) }
 						>
@@ -84,9 +85,37 @@ export default function Settings() {
 							</div>
 						</Setting>
 						<Setting
+							title={ __(
+								'Hourly call limit per plugin',
+								'gatehouse'
+							) }
+							desc={ __(
+								'Runaway protection: the most AI calls any one plugin or theme may make in an hour. Further calls are blocked and you get an alert. It counts every call, including streamed ones with no known cost. A plugin can have its own limit on the Sources page. Leave empty for no limit.',
+								'gatehouse'
+							) }
+						>
+							<div style={ { width: 170 } }>
+								<CountInput
+									value={ draft.rate_limit }
+									onChange={ ( v ) =>
+										patch( 'rate_limit', v )
+									}
+									suffix={ __( 'per hour', 'gatehouse' ) }
+									placeholder={ __(
+										'No limit',
+										'gatehouse'
+									) }
+									label={ __(
+										'Hourly call limit per plugin',
+										'gatehouse'
+									) }
+								/>
+							</div>
+						</Setting>
+						<Setting
 							title={ __( 'Email alerts', 'gatehouse' ) }
 							desc={ __(
-								'One email per budget per month when it passes the threshold, and one when it is reached.',
+								'One email per budget per month when it passes the threshold, and one when it is reached. Also one a day per plugin that hits its hourly limit.',
 								'gatehouse'
 							) }
 						>
@@ -165,7 +194,7 @@ export default function Settings() {
 								'gatehouse'
 							) }
 							desc={ __(
-								'Keeps the first 1,000 characters of each prompt (after redaction) and response, for debugging. Off by default because prompts can contain customer data.',
+								'Keeps the first 1,000 characters of each prompt (with detected personal data masked) and response, for debugging. Off by default: answers are stored as received and can contain customer data.',
 								'gatehouse'
 							) }
 							badge={
@@ -616,7 +645,7 @@ function AutoPrices( { pricing, enabled, saved, onChange, dirty, reload } ) {
 			<Setting
 				title={ __( 'Update prices automatically', 'gatehouse' ) }
 				desc={ __(
-					'Downloads current prices once a day from OpenRouter’s public model list, which covers Anthropic, OpenAI and Google models. The request sends nothing about your site. Prices you edit below always take priority.',
+					'Downloads current prices once a day from OpenRouter’s public model list, which covers Anthropic, OpenAI, Google, xAI, Mistral and DeepSeek models, plus every model on OpenRouter. Groq and Perplexity models aren’t priced: add their prices below. The request sends nothing about your site. Prices you edit below always take priority.',
 					'gatehouse'
 				) }
 				badge={

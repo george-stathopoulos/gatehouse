@@ -1,9 +1,17 @@
-# Private AI with WebLLM
+# Local AI with WebLLM
 
-Gatehouse watches every AI call your plugins make, whatever the provider. If you'd rather not send anything to an AI company at all, **AI Provider for WebLLM** runs a language model inside your own browser, and Gatehouse tracks it like any other provider, at a cost of $0.
+> **Limitations: read this first.**
+> - The model runs **only in an open dashboard (wp-admin) tab**. Close every tab and AI calls fail.
+> - **No cron, WP-CLI or front-end visitors:** background tasks and visitors on your site have no browser running the model.
+> - **Small models** that fit in a browser: useful, but weaker than cloud models.
+> - **Chrome or Edge on a desktop** with WebGPU, and an HTTPS (or `localhost`) site.
+>
+> That makes it a good fit for **development sites and editor-side experiments**, not for a live site's AI features.
+
+**AI Provider for WebLLM** runs a language model inside your browser. Gatehouse tracks it like any other provider, at a cost of $0.
 
 - **No API key and no bill.** The model runs on your computer's graphics chip (WebGPU).
-- **Private.** Prompts and answers stay in your browser and your site. Nothing is sent to an AI company.
+- **Nothing sent to an AI company.** Prompts and answers stay in your browser and your site.
 - **Free and open source** (GPL), created by Joost de Valk and published by [Progress Planner](https://progressplanner.com/). Gatehouse isn't affiliated with it; we recommend it because it fits how we think AI should work in WordPress.
 
 Project page: [github.com/ProgressPlanner/ai-provider-for-webllm](https://github.com/ProgressPlanner/ai-provider-for-webllm)
@@ -53,7 +61,7 @@ The first time a model is used, your browser downloads it. Keep the tab open unt
 - **Wait for “ready”.** The model loads into each dashboard page you open (from the browser's cache after the first time). Calls made before it finishes fail with *No WebLLM worker is connected for model …*; try again once **WebLLM worker: ready** shows. Small models load in seconds.
 - **No background AI.** Scheduled tasks (cron) and WP-CLI have no browser, so AI calls that plugins make in the background fail while WebLLM is the provider. Gatehouse logs them as failed, so you can see which plugins do this.
 - **Budgets and costs.** Local calls cost $0, so they never use up a budget or show as unpriced. Pausing a plugin still stops its calls.
-- **Speed depends on your computer.** A laptop with a recent graphics chip answers a short brief in seconds; older machines take longer. Smaller models help.
+- **Speed depends on your computer.** A laptop with a recent graphics chip answers a short request in seconds; older machines take longer. Smaller models help.
 
 ## Troubleshooting
 

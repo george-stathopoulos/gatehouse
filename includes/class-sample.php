@@ -54,13 +54,13 @@ final class Gatehouse_Sample {
 
 		Gatehouse_Settings::update(
 			array(
+				// Helpdesk Bot replies to customers, so its personal data is replaced. Form Guard checks
+				// whether sign-ups are spam and needs the real email addresses, so it is only monitored.
 				'sources'       => array(
-					'theme:aurora' => array( 'skip_brief' => true ),
+					'plugin:helpdesk-bot' => array( 'redact' => true ),
+					'plugin:form-guard'   => array( 'rate_limit' => 200 ),
 				),
-				'brief'         => array(
-					'enabled' => true,
-					'text'    => "Write in a warm, plain-spoken voice for independent coffee roasters.\nUse British English. Keep sentences short.\nNever promise delivery dates or refunds; point customers to the help centre instead.",
-				),
+				'rate_limit'    => 500,
 			)
 		);
 
@@ -122,6 +122,17 @@ final class Gatehouse_Sample {
 					$cost   = 0;
 				}
 
+				$pii = '';
+				if ( 'blocked' !== $status && $this->rand( 1, 100 ) <= $s['pii'] ) {
+					$found = array();
+					foreach ( $s['pii_types'] as $type ) {
+						if ( ! $found || $this->rand( 1, 100 ) <= 35 ) {
+							$found[ $type ] = $this->rand( 1, 2 );
+						}
+					}
+					$pii = Gatehouse_Redactor::encode_counts( $found );
+				}
+
 				$from_cache = 'ok' === $status && $ts >= $cache_on && in_array( $id, $cached, true ) && isset( $seen[ $hash ] );
 				$seen[ $hash ] = true;
 
@@ -141,8 +152,10 @@ final class Gatehouse_Sample {
 						'prompt_hash'   => 'ok' === $status ? $hash : '',
 						'priced'        => null === $cost ? 0 : 1,
 						'latency_ms'    => $from_cache ? $this->rand( 30, 140 ) : ( 'ok' === $status ? (int) round( $s['latency'] * ( 0.6 + $this->rand( 0, 80 ) / 100 ) ) : ( 'error' === $status ? $this->rand( 200, 4000 ) : 0 ) ),
-						'redactions'    => 'blocked' === $status ? 0 : ( $this->rand( 1, 100 ) <= $s['pii'] ? $this->rand( 1, 3 ) : 0 ),
-						'brief'         => 'ok' === $status && 'theme:aurora' !== $id ? 1 : 0,
+						'pii'           => $pii,
+						// Two of the sample plugins call their provider directly, with their own API key.
+						'channel'       => in_array( $id, array( 'plugin:shop-copy-ai', 'plugin:form-guard' ), true ) ? 'direct' : 'ai_client',
+						'redactions'    => 'plugin:helpdesk-bot' === $id ? array_sum( Gatehouse_Redactor::decode_counts( $pii ) ) : 0,
 						'note'          => $note,
 				);
 				++$inserted;
@@ -249,7 +262,7 @@ final class Gatehouse_Sample {
 
 		// SEO Insights: paused 20 hours ago; calls since then were blocked.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->query( $wpdb->prepare( "UPDATE %i SET status = 'blocked', input_tokens = 0, output_tokens = 0, cost = 0, latency_ms = 0, redactions = 0, brief = 0, note = %s WHERE source = %s AND created_at >= %s", $table, __( 'Source is paused', 'gatehouse' ), 'plugin:seo-insights', gmdate( 'Y-m-d H:i:s', $now - 20 * HOUR_IN_SECONDS ) ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE %i SET status = 'blocked', input_tokens = 0, output_tokens = 0, cost = 0, latency_ms = 0, redactions = 0, pii = '', note = %s WHERE source = %s AND created_at >= %s", $table, __( 'Source is paused', 'gatehouse' ), 'plugin:seo-insights', gmdate( 'Y-m-d H:i:s', $now - 20 * HOUR_IN_SECONDS ) ) );
 
 		// Site-wide budget: about 40% above the 30-day run rate.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -287,6 +300,7 @@ final class Gatehouse_Sample {
 				'out'      => 380,
 				'latency'  => 1400,
 				'pii'      => 46,
+				'pii_types' => array( 'EMAIL', 'PHONE' ),
 				'repeat'   => 28,
 			),
 			'plugin:shop-copy-ai'      => array(
@@ -298,6 +312,7 @@ final class Gatehouse_Sample {
 				'out'      => 1400,
 				'latency'  => 6200,
 				'pii'      => 2,
+				'pii_types' => array( 'EMAIL' ),
 				'repeat'   => 3,
 			),
 			'plugin:seo-insights'      => array(
@@ -309,6 +324,7 @@ final class Gatehouse_Sample {
 				'out'      => 700,
 				'latency'  => 3800,
 				'pii'      => 1,
+				'pii_types' => array( 'EMAIL' ),
 				'repeat'   => 12,
 			),
 			'plugin:alt-text-pro'      => array(
@@ -320,6 +336,7 @@ final class Gatehouse_Sample {
 				'out'      => 60,
 				'latency'  => 900,
 				'pii'      => 0,
+				'pii_types' => array( 'EMAIL' ),
 				'repeat'   => 6,
 			),
 			'plugin:form-guard'        => array(
@@ -331,6 +348,7 @@ final class Gatehouse_Sample {
 				'out'      => 20,
 				'latency'  => 450,
 				'pii'      => 71,
+				'pii_types' => array( 'EMAIL', 'IP' ),
 				'repeat'   => 38,
 			),
 			'theme:aurora'             => array(
@@ -342,6 +360,7 @@ final class Gatehouse_Sample {
 				'out'      => 2600,
 				'latency'  => 14000,
 				'pii'      => 0,
+				'pii_types' => array( 'EMAIL' ),
 				'repeat'   => 0,
 			),
 			'plugin:newsletter-studio' => array(
@@ -353,6 +372,7 @@ final class Gatehouse_Sample {
 				'out'      => 900,
 				'latency'  => 5200,
 				'pii'      => 12,
+				'pii_types' => array( 'EMAIL', 'TERM' ),
 				'repeat'   => 4,
 			),
 		);

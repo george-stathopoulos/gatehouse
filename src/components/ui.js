@@ -122,6 +122,11 @@ const SOURCE_STATUS = {
 		icon: 'ban',
 		label: __( 'Budget reached', 'gatehouse' ),
 	},
+	limited: {
+		tone: 'critical',
+		icon: 'gauge',
+		label: __( 'Hit hourly limit', 'gatehouse' ),
+	},
 	paused: {
 		tone: 'critical',
 		icon: 'pause',
@@ -266,6 +271,50 @@ export function Setting( { title, desc, children, badge } ) {
 			</div>
 			<div className="gatehouse-setting__control">{ children }</div>
 		</div>
+	);
+}
+
+/**
+ * Whole-number input where empty means 0, such as a calls-per-hour limit.
+ *
+ * @param {Object}   props             Props.
+ * @param {number}   props.value       Value (0 shows as empty).
+ * @param {Function} props.onChange    Receives a number.
+ * @param {string}   props.label       Accessible label.
+ * @param {string}   props.placeholder Placeholder.
+ * @param {string}   props.suffix      Unit shown after the field.
+ * @return {JSX.Element} Input.
+ */
+export function CountInput( {
+	value,
+	onChange,
+	label,
+	placeholder = '',
+	suffix,
+} ) {
+	return (
+		<span className="gatehouse-count">
+			<input
+				className="gatehouse-input gatehouse-num"
+				type="number"
+				min="0"
+				step="1"
+				inputMode="numeric"
+				aria-label={ label }
+				placeholder={ placeholder }
+				value={ ! value ? '' : value }
+				onChange={ ( e ) =>
+					onChange(
+						e.target.value === ''
+							? 0
+							: Math.max( 0, parseInt( e.target.value, 10 ) || 0 )
+					)
+				}
+			/>
+			{ suffix && (
+				<span className="gatehouse-count__suffix">{ suffix }</span>
+			) }
+		</span>
 	);
 }
 

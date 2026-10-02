@@ -13,7 +13,6 @@ import Overview from './pages/Overview';
 import Sources from './pages/Sources';
 import Requests from './pages/Requests';
 import Privacy from './pages/Privacy';
-import Brief from './pages/Brief';
 import Settings from './pages/Settings';
 import Help from './pages/Help';
 import Welcome, { startDemo } from './pages/Welcome';
@@ -42,12 +41,6 @@ const ROUTES = [
 		label: __( 'Privacy', 'gatehouse' ),
 		icon: 'shield',
 		Page: Privacy,
-	},
-	{
-		id: 'brief',
-		label: __( 'Brand brief', 'gatehouse' ),
-		icon: 'quote',
-		Page: Brief,
 	},
 	{
 		id: 'settings',

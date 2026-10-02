@@ -2,8 +2,8 @@
 /**
  * Plugin Name:       Gatehouse
  * Plugin URI:        https://wordpress.org/plugins/gatehouse/
- * Description:       See, budget and protect every AI call your site makes. Per-plugin cost tracking, spending caps, personal-data redaction and a sitewide brand brief for the WordPress AI Client.
- * Version:           1.5.0
+ * Description:       Cost tracking, budgets and personal-data checks for the AI calls plugins make, through the WordPress AI Client or directly with their own API key.
+ * Version:           2.0.0
  * Requires at least: 7.0
  * Requires PHP:      7.4
  * Author:            George Stathopoulos
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GATEHOUSE_VERSION', '1.5.0' );
+define( 'GATEHOUSE_VERSION', '2.0.0' );
 define( 'GATEHOUSE_FILE', __FILE__ );
 define( 'GATEHOUSE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GATEHOUSE_URL', plugin_dir_url( __FILE__ ) );

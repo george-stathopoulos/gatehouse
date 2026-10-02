@@ -24,8 +24,12 @@ final class Gatehouse_Price_Sync {
 	// in readme.txt under External services). AI calls themselves always go through wp_ai_client_prompt().
 	const SOURCE = 'https://openrouter.ai/api/v1/models'; // phpcs:ignore PluginCheck.CodeAnalysis.AIProvider.DirectIntegration
 
-	/** Providers whose models are imported, and the prefix they use in the list. */
-	const PROVIDERS = array( 'anthropic', 'openai', 'google' );
+	/**
+	 * Providers whose models are imported under the ids those providers use themselves (as the list
+	 * names them). Every model in the list is also imported under its OpenRouter id, such as
+	 * `anthropic/claude-sonnet-5.5`, for plugins that call OpenRouter directly.
+	 */
+	const PROVIDERS = array( 'anthropic', 'openai', 'google', 'x-ai', 'mistralai', 'deepseek' );
 
 	/** A list smaller than this is treated as broken and ignored. */
 	const MIN_MODELS = 10;
@@ -141,7 +145,7 @@ final class Gatehouse_Price_Sync {
 				continue; // Variants such as ":free" or ":batch" have special pricing.
 			}
 			list( $provider, $name ) = array_pad( explode( '/', $m['id'], 2 ), 2, '' );
-			if ( ! in_array( $provider, self::PROVIDERS, true ) || '' === $name ) {
+			if ( '' === $name ) {
 				continue;
 			}
 			$in  = isset( $m['pricing']['prompt'] ) ? (float) $m['pricing']['prompt'] * 1000000 : -1;
@@ -149,8 +153,21 @@ final class Gatehouse_Price_Sync {
 			if ( $in <= 0 || $out_price <= 0 || $in > 1000 || $out_price > 5000 ) {
 				continue; // Free, unknown or implausible prices are not imported.
 			}
-			$id         = self::native_id( $provider, strtolower( $name ) );
-			$out[ $id ] = array( round( $in, 6 ), round( $out_price, 6 ) );
+			$price = array( round( $in, 6 ), round( $out_price, 6 ) );
+
+			// OpenRouter's own id, for calls made through OpenRouter.
+			$out[ strtolower( $m['id'] ) ] = $price;
+
+			// The provider's own id, for calls made to the provider directly.
+			if ( in_array( $provider, self::PROVIDERS, true ) ) {
+				$native         = self::native_id( $provider, strtolower( $name ) );
+				$out[ $native ] = $price;
+				// xAI and others write versions both ways (grok-4.1 / grok-4-1); accept both.
+				$dashed = (string) preg_replace( '/(\d)\.(\d)/', '$1-$2', $native );
+				if ( $dashed !== $native && ! isset( $out[ $dashed ] ) ) {
+					$out[ $dashed ] = $price;
+				}
+			}
 		}
 		ksort( $out );
 		return $out;

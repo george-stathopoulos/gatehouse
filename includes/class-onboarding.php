@@ -87,6 +87,7 @@ final class Gatehouse_Onboarding {
 			'connectors' => admin_url( 'options-connectors.php' ),
 			'plugins'    => admin_url( 'plugin-install.php?s=ai+provider&tab=search&type=term' ),
 			'budget'     => $settings['global_budget'],
+			'rate_limit' => (int) $settings['rate_limit'],
 			'alerts'     => $settings['alerts'],
 			'redaction'  => (bool) $settings['redaction']['enabled'],
 			'prices_auto'=> (bool) $settings['prices_auto'],

@@ -23,7 +23,8 @@ The cost is recorded when the call happens. Changing a price later doesn't chang
 
 - Discounts such as prompt caching, batch pricing or committed-use agreements, unless you enter your own discounted prices.
 - Taxes, currency conversion, minimum charges or monthly plan fees.
-- Calls made by plugins that call an AI provider **directly**, with their own API key, instead of through WordPress's AI Client. Gatehouse can't see those calls.
+- **Streamed answers read by the plugin itself** (common for chatbots). Gatehouse sees and can block these calls, but the token counts aren't available, so they're logged without a cost and don't count towards dollar budgets. Hourly limits still count them.
+- Calls Gatehouse can't see at all: plugins that send AI requests to their own service, or that bypass WordPress's HTTP functions. See [What Gatehouse can and can't see](getting-started.md#what-gatehouse-can-and-cant-see).
 
 ## Where prices come from
 
@@ -35,7 +36,7 @@ Gatehouse uses the first of these that has a price for the model:
 
 ### Automatic price updates (recommended)
 
-Turn on **Update prices automatically**. The setup guide offers it, and it's also under **Settings → Model prices**. Gatehouse then downloads current prices **once a day** from [OpenRouter's public model list](https://openrouter.ai/api/v1/models), which covers Anthropic (Claude), OpenAI (GPT) and Google (Gemini) models.
+Turn on **Update prices automatically**. The setup guide offers it, and it's also under **Settings → Model prices**. Gatehouse then downloads current prices **once a day** from [OpenRouter's public model list](https://openrouter.ai/api/v1/models). It covers Anthropic, OpenAI, Google, xAI, Mistral and DeepSeek models under their own names, and every model on OpenRouter under OpenRouter's names (for plugins that call OpenRouter directly). Groq and Perplexity models aren't covered; add their prices yourself.
 
 - **Nothing about your site is sent.** The request is a plain download: no site address, no usage data, no keys.
 - **Model names are matched for you.** The list's names are converted to the names providers use (for example `anthropic/claude-sonnet-5.5` → `claude-sonnet-5-5`). Batch and free variants are ignored.
@@ -79,7 +80,7 @@ Turn on automatic price updates, or add the model's price yourself. Calls made b
 
 [AI Provider for WebLLM](https://github.com/ProgressPlanner/ai-provider-for-webllm) runs a language model inside the browser (WebGPU): no API key, no cloud and no per-request bill. Gatehouse logs its calls like any other, with the plugin, model and tokens, at a cost of **$0**, so they never show as unpriced and never use up a budget.
 
-To set it up, follow [Private AI with WebLLM](local-ai.md): download, install, choose a model, turn on the in-browser worker and check it works.
+To set it up, and for its limits, see [Local AI with WebLLM](local-ai.md): download, install, choose a model, turn on the in-browser worker and check it works.
 
 Developers can mark other local providers as free with the `gatehouse_local_providers` filter.
 

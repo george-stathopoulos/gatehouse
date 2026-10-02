@@ -18,6 +18,7 @@ import {
 	Switch,
 	Setting,
 	MoneyInput,
+	CountInput,
 	useToast,
 	typeLabel,
 	Pill,
@@ -46,7 +47,7 @@ export default function Sources() {
 	const budgeted = sources.filter( ( s ) => s.policy.budget > 0 ).length;
 	const paused = sources.filter( ( s ) => s.policy.paused ).length;
 	const attention = sources.filter( ( s ) =>
-		[ 'forecast', 'near', 'capped' ].includes( s.status )
+		[ 'forecast', 'near', 'capped', 'limited' ].includes( s.status )
 	).length;
 	const current = editing ? sources.find( ( s ) => s.id === editing ) : null;
 
@@ -133,7 +134,7 @@ export default function Sources() {
 					<Empty
 						title={ __( 'No sources yet', 'gatehouse' ) }
 						text={ __(
-							'Plugins and themes appear here the first time they call AI through the WordPress AI Client.',
+							'Plugins and themes appear here the first time they call AI, through the WordPress AI Client or directly with their own API key.',
 							'gatehouse'
 						) }
 					/>
@@ -347,7 +348,11 @@ function PolicyDrawer( { source, color, onClose, onSaved } ) {
 		setSaving( true );
 		send( 'sources', 'POST', {
 			source: source.id,
-			policy: { ...policy, budget: Number( policy.budget ) || 0 },
+			policy: {
+				...policy,
+				budget: Number( policy.budget ) || 0,
+				rate_limit: Number( policy.rate_limit ) || 0,
+			},
 		} )
 			.then( () => {
 				toast( __( 'Policy saved', 'gatehouse' ) );
@@ -464,6 +469,10 @@ function PolicyDrawer( { source, color, onClose, onSaved } ) {
 				</dd>
 				<dt>{ __( 'Tokens', 'gatehouse' ) }</dt>
 				<dd className="gatehouse-num">{ compact( source.tokens ) }</dd>
+				<dt>{ __( 'Calls with personal data', 'gatehouse' ) }</dt>
+				<dd className="gatehouse-num">
+					{ compact( source.pii_calls ) }
+				</dd>
 				<dt>{ __( 'Items redacted', 'gatehouse' ) }</dt>
 				<dd className="gatehouse-num">
 					{ compact( source.redactions ) }
@@ -510,9 +519,47 @@ function PolicyDrawer( { source, color, onClose, onSaved } ) {
 						</div>
 					</Setting>
 					<Setting
+						title={ __( 'Hourly call limit', 'gatehouse' ) }
+						desc={
+							source.rate_limit && ! policy.rate_limit
+								? sprintf(
+										/* translators: 1: site-wide calls per hour, 2: calls in the last hour. */ __(
+											'Calls are blocked once this many were made in the last hour. Empty uses the site-wide limit (%1$d per hour, in Settings). Last hour: %2$s calls.',
+											'gatehouse'
+										),
+										source.rate_limit,
+										compact( source.last_hour )
+								  )
+								: sprintf(
+										/* translators: %s: calls in the last hour. */ __(
+											'Calls are blocked once this many were made in the last hour. Empty uses the site-wide limit from Settings, if any. Last hour: %s calls.',
+											'gatehouse'
+										),
+										compact( source.last_hour )
+								  )
+						}
+					>
+						<div style={ { width: 150 } }>
+							<CountInput
+								value={ policy.rate_limit }
+								onChange={ set( 'rate_limit' ) }
+								suffix={ __( 'per hour', 'gatehouse' ) }
+								placeholder={
+									source.rate_limit && ! policy.rate_limit
+										? String( source.rate_limit )
+										: ''
+								}
+								label={ __(
+									'Hourly call limit for this source',
+									'gatehouse'
+								) }
+							/>
+						</div>
+					</Setting>
+					<Setting
 						title={ __( 'Pause AI', 'gatehouse' ) }
 						desc={ __(
-							'Block every AI call from this source. Well-behaved plugins hide their AI features while paused.',
+							'Block the AI calls this source makes, through the WordPress AI Client or directly. The plugin gets an error instead of an answer; plugins that check whether AI is available may hide their AI features.',
 							'gatehouse'
 						) }
 						badge={
@@ -533,33 +580,24 @@ function PolicyDrawer( { source, color, onClose, onSaved } ) {
 						/>
 					</Setting>
 					<Setting
-						title={ __( 'Skip redaction', 'gatehouse' ) }
+						title={ __( 'Redact personal data', 'gatehouse' ) }
 						desc={ __(
-							'Send this source’s prompts unchanged. Only for plugins that need exact personal data, such as a CRM.',
+							'Replace emails, phone numbers and other personal data with placeholders before this source’s requests leave your site, and put them back in the answer. Off by default: turn it on for plugins that don’t need the real values, such as a support reply writer. Leave it off for plugins that do, such as a spam checker.',
 							'gatehouse'
 						) }
+						badge={
+							policy.redact ? (
+								<Pill tone="good" icon="shield">
+									{ __( 'Redacting', 'gatehouse' ) }
+								</Pill>
+							) : null
+						}
 					>
 						<Switch
-							checked={ policy.skip_redaction }
-							onChange={ set( 'skip_redaction' ) }
+							checked={ policy.redact }
+							onChange={ set( 'redact' ) }
 							label={ __(
-								'Skip redaction for this source',
-								'gatehouse'
-							) }
-						/>
-					</Setting>
-					<Setting
-						title={ __( 'Skip brand brief', 'gatehouse' ) }
-						desc={ __(
-							'Do not add the brand brief to this source’s prompts.',
-							'gatehouse'
-						) }
-					>
-						<Switch
-							checked={ policy.skip_brief }
-							onChange={ set( 'skip_brief' ) }
-							label={ __(
-								'Skip brand brief for this source',
+								'Redact personal data for this source',
 								'gatehouse'
 							) }
 						/>

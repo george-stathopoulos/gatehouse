@@ -48,7 +48,9 @@ This list shows anything you might want to act on:
 
 | Item | What it means |
 |---|---|
+| **Unusual activity** or **Unusual spending** | A source's last hour or last day is far above its normal level. It isn't blocked; consider an hourly limit or budget. |
 | **Paused** | You paused this source; its AI calls are being blocked. |
+| **Hit its hourly limit** | It made as many calls in the last hour as its limit allows; further calls are blocked. Possibly a loop or spam wave. |
 | **Reached its monthly budget** | Its calls are blocked until the 1st of next month, or until you raise the budget. |
 | **Near its budget** | It has used more than your alert threshold (80% by default). |
 | **On pace to exceed** | It is still under budget, but its forecast is over. Act now to avoid a hard stop later in the month. |
@@ -66,17 +68,10 @@ The row of six tiles shows, for the selected period:
 | **Tokens** | Input plus output tokens across completed calls |
 | **Avg. cost per call** | Estimated spend ÷ completed calls |
 | **Avg. response time** | How long completed calls took, from request to answer |
-| **Personal data redacted** | Items replaced with placeholders before leaving your site |
-| **Blocked calls** | Calls stopped by a pause or a budget |
+| **Calls with personal data** | Calls that contained emails, phone numbers or other personal data, whether or not it was replaced. See [Privacy](privacy.md). |
+| **Blocked calls** | Calls stopped by a pause, a budget or an hourly limit |
 
 Each tile compares with the previous period and shows a small trend line of the last 14 days. A tile shows **New** when there was nothing to compare with.
-
-## Repeated requests and caching
-
-When plugins send exactly the same AI request more than once, a card under the key numbers shows how many calls were repeats, what they cost and which plugins repeat most. Gatehouse spots repeats from a fingerprint of each request; the request text itself is never stored.
-
-- **Without Gatehouse Pro:** the card estimates what a response cache could have saved. Click **×** to hide it.
-- **With [Gatehouse Pro](pro.md):** the card shows what caching actually saved, and what uncached repeats still cost.
 
 ## Top sources
 
@@ -84,7 +79,7 @@ The plugins and themes with the highest spend in the period. For each one:
 
 - **Spend** in the period.
 - **This month:** a budget bar if it has a budget (solid = spent, striped = forecast, tick = budget), or its month-to-date spend if it has none.
-- **Status:** Active, On pace to exceed, Near budget, Budget reached or Paused.
+- **Status:** Active, On pace to exceed, Near budget, Budget reached, Hit hourly limit or Paused.
 
 **Manage** opens the [Sources](sources-and-budgets.md) page.
 
@@ -98,7 +93,7 @@ A heatmap of requests by weekday and hour, in your site's timezone. Darker squar
 
 ## Recent activity
 
-The latest AI calls, with source, model, cost, any redactions and how long ago each happened. **All requests** opens the full [Requests](requests.md) log.
+The latest AI calls, with source, model, cost, any items replaced and how long ago each happened. **All requests** opens the full [Requests](requests.md) log.
 
 ## Banners
 
@@ -107,6 +102,8 @@ Banners at the top of the Overview tell you about problems that affect accuracy 
 - **AI features are turned off on this site.** Something has disabled the WordPress AI Client.
 - **No AI provider is connected** or **…is installed but not connected.** See [Troubleshooting](troubleshooting.md#a-banner-says-the-provider-is-not-connected).
 - **Calls used models with no price.** Their cost shows as $0 until you add a price.
+
+Note that calls whose answers were streamed and read by the plugin itself have no known cost. They're counted in calls and hourly limits, but not in spend.
 - **Built-in model prices are N days old.** Shown when the prices built into the plugin are more than four months old. Update the plugin or review the prices.
 
 The note at the bottom of the page shows which Gatehouse version supplied the prices, and the date they were checked.

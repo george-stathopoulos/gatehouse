@@ -4,8 +4,8 @@
 
 The Overview says **Waiting for the first AI call** even though a plugin has used AI. Check these in order:
 
-1. **Is an AI provider connected?** Look for a banner at the top of the Overview, and check **Settings → Connectors**.
-2. **Does the plugin use the WordPress AI Client?** Gatehouse only sees calls made through it. Plugins that call a provider directly with their own API key are invisible to Gatehouse. Ask the plugin's developer whether it uses `wp_ai_client_prompt()`.
+1. **Can Gatehouse see this plugin's calls?** It sees plugins that use the WordPress AI Client, and plugins that call Anthropic, OpenAI, Google, OpenRouter, xAI, Mistral, DeepSeek, Groq or Perplexity directly through WordPress's HTTP functions. It can't see plugins that send AI requests to their own service, or that use their own HTTP code. See [What Gatehouse can and can't see](getting-started.md#what-gatehouse-can-and-cant-see).
+2. **For AI Client plugins: is an AI provider connected?** Look for a banner at the top of the Overview, and check **Settings → Connectors**.
 3. **Is AI turned off on the site?** A banner says **AI features are turned off on this site** when the `WP_AI_SUPPORT` constant is set to `false`, or when another plugin uses the `wp_supports_ai` filter to disable AI.
 4. **Are you looking at the right period?** Pick **30 days** or **90 days** at the top of the Overview.
 
@@ -59,14 +59,16 @@ Gatehouse's costs are estimates. Common reasons for a difference:
 
 ## Answers contain placeholders such as [EMAIL_1]
 
-Gatehouse puts real values back when the answer contains a placeholder exactly as sent. If a model changes a placeholder (for example to "EMAIL 1" or "email_1"), it can't be restored.
+This only happens for plugins with redaction on. Gatehouse puts real values back when the answer contains a placeholder as sent, or slightly rewritten (`[EMAIL 1]`, `[email_1]`, `EMAIL_1`). If a model changes it beyond that, it can't be restored.
 
-To fix it for one plugin, turn on **Skip redaction** in its policy on **Sources**. To check what a plugin is sending, temporarily turn on excerpts under **Settings → Logging** and open the call in **Requests**.
+If it keeps happening for a plugin, turn redaction off for it on the **Privacy** page. To check what a plugin is sending, temporarily turn on excerpts under **Settings → Logging** and open the call in **Requests**.
 
-## Something that isn't personal data was redacted
+## Something that isn't personal data was detected
 
-- **Numbers:** the phone detector ignores dates, version numbers and decimals, but some codes formatted like phone numbers (for example `020 7946 0958`) will still be replaced. If this affects a plugin, switch off **Phone numbers** under **Privacy**, or turn on **Skip redaction** for that plugin.
-- **Custom terms** match anywhere, ignoring case, including inside longer words. Make terms specific: "Falcon Project" rather than "Falcon".
+- **Numbers:** phone numbers without `+` or brackets only count right after a word such as "phone" or "call", and amounts such as `12 500 000` are ignored. A code that follows such a word can still be counted. If phone detection doesn't suit your site, switch off **Phone numbers** under **Privacy**.
+- **Custom terms** match whole words only, ignoring case. Make terms specific: "Falcon Project" rather than "Falcon".
+
+Detection alone never changes a request; only plugins with redaction on are affected.
 
 Use the **Try it** box on the Privacy page to test any text.
 

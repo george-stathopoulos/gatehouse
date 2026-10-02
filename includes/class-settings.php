@@ -38,16 +38,18 @@ final class Gatehouse_Settings {
 	public static function defaults() {
 		return array(
 			'global_budget'   => 0,
+			// Most AI calls one source may make in an hour (0 = no limit). Counts every call, including
+			// streamed ones whose cost isn't known, so it stops loops that dollar budgets can miss.
+			'rate_limit'      => 0,
 			'alerts'          => array(
 				'enabled'   => true,
 				'threshold' => 80,
 				'email'     => get_option( 'admin_email' ),
 			),
 			'sources'         => array(),
-			'brief'           => array(
-				'enabled' => false,
-				'text'    => '',
-			),
+			// Personal data. `enabled` turns on detection: requests are scanned and what was found is
+			// reported, but nothing is changed. Values are only replaced for the sources whose policy
+			// has `redact` turned on.
 			'redaction'       => array(
 				'enabled' => true,
 				'email'   => true,
@@ -76,8 +78,8 @@ final class Gatehouse_Settings {
 		return array(
 			'budget'         => 0,
 			'paused'         => false,
-			'skip_brief'     => false,
-			'skip_redaction' => false,
+			'redact'         => false,
+			'rate_limit'     => 0, // Calls per hour; 0 uses the site-wide limit.
 		);
 	}
 
@@ -116,6 +118,17 @@ final class Gatehouse_Settings {
 		$sources = self::get( 'sources' );
 		$stored  = isset( $sources[ $source ] ) && is_array( $sources[ $source ] ) ? $sources[ $source ] : array();
 		return array_merge( self::source_defaults(), $stored );
+	}
+
+	/**
+	 * Hourly call limit that applies to a source: its own, or else the site-wide one (0 = none).
+	 *
+	 * @param string $source Source id.
+	 * @return int
+	 */
+	public static function rate_limit_for( $source ) {
+		$own = (int) self::source( $source )['rate_limit'];
+		return $own > 0 ? $own : (int) self::get( 'rate_limit' );
 	}
 
 	/**
@@ -185,16 +198,13 @@ final class Gatehouse_Settings {
 		$d   = self::defaults();
 		$out = array(
 			'global_budget' => self::money( $s['global_budget'] ?? 0 ),
+			'rate_limit'    => min( 1000000, absint( $s['rate_limit'] ?? 0 ) ),
 			'alerts'        => array(
 				'enabled'   => ! empty( $s['alerts']['enabled'] ),
 				'threshold' => max( 1, min( 100, absint( $s['alerts']['threshold'] ?? $d['alerts']['threshold'] ) ) ),
 				'email'     => sanitize_email( $s['alerts']['email'] ?? '' ),
 			),
 			'sources'       => array(),
-			'brief'         => array(
-				'enabled' => ! empty( $s['brief']['enabled'] ),
-				'text'    => sanitize_textarea_field( $s['brief']['text'] ?? '' ),
-			),
 			'redaction'     => array(
 				'enabled' => ! empty( $s['redaction']['enabled'] ),
 				'custom'  => array(),
@@ -228,8 +238,8 @@ final class Gatehouse_Settings {
 			$out['sources'][ $id ] = array(
 				'budget'         => self::money( $policy['budget'] ?? 0 ),
 				'paused'         => ! empty( $policy['paused'] ),
-				'skip_brief'     => ! empty( $policy['skip_brief'] ),
-				'skip_redaction' => ! empty( $policy['skip_redaction'] ),
+				'redact'         => ! empty( $policy['redact'] ),
+				'rate_limit'     => min( 1000000, absint( $policy['rate_limit'] ?? 0 ) ),
 			);
 		}
 

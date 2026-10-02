@@ -1,4 +1,4 @@
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { send } from '../lib/hooks';
 import { useSettingsDraft, SaveBar } from '../lib/settings';
@@ -11,6 +11,9 @@ import {
 	ErrorNotice,
 	Setting,
 	Loading,
+	Button,
+	Segmented,
+	useToast,
 } from '../components/ui';
 import Icon from '../components/Icon';
 
@@ -26,6 +29,10 @@ const DETECTORS = [
 		name: __( 'Phone numbers', 'gatehouse' ),
 		example: '+44 20 7946 0958',
 		token: '[PHONE_1]',
+		note: __(
+			'Numbers without “+” or brackets count only after a word such as “phone” or “call”, so order numbers and amounts are left alone.',
+			'gatehouse'
+		),
 	},
 	{
 		key: 'card',
@@ -33,7 +40,7 @@ const DETECTORS = [
 		example: '4242 4242 4242 4242',
 		token: '[CARD_1]',
 		note: __(
-			'Checked with the Luhn algorithm, so order numbers are left alone.',
+			'Needs a known card prefix and a valid checksum, so most order numbers are left alone.',
 			'gatehouse'
 		),
 	},
@@ -42,6 +49,7 @@ const DETECTORS = [
 		name: __( 'Bank accounts (IBAN)', 'gatehouse' ),
 		example: 'GB33BUKB20201555555555',
 		token: '[IBAN_1]',
+		note: __( 'Needs a valid IBAN checksum.', 'gatehouse' ),
 	},
 	{
 		key: 'ssn',
@@ -66,6 +74,16 @@ const SAMPLE = sprintf(
 	'2026-09-28'
 );
 
+const TYPE_LABELS = {
+	email: __( 'Emails', 'gatehouse' ),
+	phone: __( 'Phones', 'gatehouse' ),
+	card: __( 'Cards', 'gatehouse' ),
+	iban: __( 'IBANs', 'gatehouse' ),
+	ssn: __( 'SSNs', 'gatehouse' ),
+	ip: __( 'IPs', 'gatehouse' ),
+	term: __( 'Custom terms', 'gatehouse' ),
+};
+
 export default function Privacy() {
 	const {
 		payload,
@@ -88,9 +106,20 @@ export default function Privacy() {
 
 	const r = draft.redaction;
 	const usage = payload.usage;
-	const enabledCount =
-		DETECTORS.filter( ( d ) => r[ d.key ] ).length +
-		( r.custom.length ? 1 : 0 );
+	const report = usage.privacy || [];
+	const redactsFor = ( row ) =>
+		draft.sources?.[ row.id ]?.redact ?? row.redact;
+	const setRedact = ( row, value ) =>
+		patch( 'sources', {
+			[ row.id ]: {
+				budget: 0,
+				paused: false,
+				...( draft.sources?.[ row.id ] || {} ),
+				redact: value,
+			},
+		} );
+	const sending = report.filter( ( row ) => row.pii_calls > 0 );
+	const redacting = report.filter( redactsFor );
 
 	return (
 		<div>
@@ -98,18 +127,16 @@ export default function Privacy() {
 				help="privacy"
 				title={ __( 'Privacy', 'gatehouse' ) }
 				lede={ __(
-					'Personal data in prompts is replaced with placeholders before the request leaves your server. When the answer comes back, the gateway puts the real values back, so plugins keep working.',
+					'Gatehouse checks AI requests for personal data and shows you which plugins send it. It changes nothing unless you turn on redaction for a plugin, because some plugins need the real data to work: a spam checker can’t judge an email address it can’t see. Detection is pattern-based: it finds emails, phone numbers, cards, IBANs, SSNs and your own terms, not every name or address.',
 					'gatehouse'
 				) }
 			>
 				{ r.enabled ? (
 					<Pill tone="good" icon="shield">
-						{ __( 'Redaction on', 'gatehouse' ) }
+						{ __( 'Detection on', 'gatehouse' ) }
 					</Pill>
 				) : (
-					<Pill tone="critical" icon="x">
-						{ __( 'Redaction off', 'gatehouse' ) }
-					</Pill>
+					<Pill icon="x">{ __( 'Detection off', 'gatehouse' ) }</Pill>
 				) }
 			</PageHead>
 
@@ -117,28 +144,14 @@ export default function Privacy() {
 				<Card bodyClass={ null }>
 					<div className="gatehouse-stat">
 						<div className="gatehouse-stat__label">
-							<Icon name="shield" size={ 14 } />
-							{ __(
-								'Items redacted, last 30 days',
-								'gatehouse'
-							) }
-						</div>
-						<div className="gatehouse-stat__value">
-							{ compact( usage.redactions_30d ) }
-						</div>
-					</div>
-				</Card>
-				<Card bodyClass={ null }>
-					<div className="gatehouse-stat">
-						<div className="gatehouse-stat__label">
 							<Icon name="requests" size={ 14 } />
 							{ __(
-								'Calls that contained personal data',
+								'Calls with personal data, last 30 days',
 								'gatehouse'
 							) }
 						</div>
 						<div className="gatehouse-stat__value">
-							{ compact( usage.redacted_calls ) }
+							{ compact( usage.pii_calls_30d ) }
 							<span
 								className="gatehouse-muted"
 								style={ {
@@ -149,7 +162,7 @@ export default function Privacy() {
 							>
 								{ usage.calls_30d
 									? `${ Math.round(
-											( usage.redacted_calls /
+											( usage.pii_calls_30d /
 												usage.calls_30d ) *
 												100
 									  ) }%`
@@ -161,32 +174,143 @@ export default function Privacy() {
 				<Card bodyClass={ null }>
 					<div className="gatehouse-stat">
 						<div className="gatehouse-stat__label">
-							<Icon name="filter" size={ 14 } />
-							{ __( 'Active detectors', 'gatehouse' ) }
+							<Icon name="sources" size={ 14 } />
+							{ __(
+								'Plugins sending personal data',
+								'gatehouse'
+							) }
 						</div>
-
+						<div className="gatehouse-stat__value">
+							{ sending.length }
+						</div>
+					</div>
+				</Card>
+				<Card bodyClass={ null }>
+					<div className="gatehouse-stat">
+						<div className="gatehouse-stat__label">
+							<Icon name="shield" size={ 14 } />
+							{ __( 'Redaction turned on for', 'gatehouse' ) }
+						</div>
 						<div className="gatehouse-stat__value">
 							{ sprintf(
-								/* translators: 1: active detectors, 2: total detectors. */ __(
-									'%1$d of %2$d',
+								/* translators: %d: number of plugins. */ _n(
+									'%d plugin',
+									'%d plugins',
+									redacting.length,
 									'gatehouse'
 								),
-								enabledCount,
-								DETECTORS.length + 1
+								redacting.length
 							) }
 						</div>
 					</div>
 				</Card>
 			</div>
 
+			<Card
+				title={ __( 'Personal data by plugin', 'gatehouse' ) }
+				sub={ __(
+					'Last 30 days. Turn on redaction where a plugin doesn’t need the real values.',
+					'gatehouse'
+				) }
+				bodyClass={ null }
+				style={ { marginBottom: 18 } }
+			>
+				{ report.length ? (
+					<table className="gatehouse-table">
+						<thead>
+							<tr>
+								<th>{ __( 'Source', 'gatehouse' ) }</th>
+								<th>
+									{ __(
+										'Calls with personal data',
+										'gatehouse'
+									) }
+								</th>
+								<th>{ __( 'Found', 'gatehouse' ) }</th>
+								<th>{ __( 'Redact', 'gatehouse' ) }</th>
+							</tr>
+						</thead>
+						<tbody>
+							{ report.map( ( row ) => (
+								<tr key={ row.id }>
+									<td>
+										<strong>{ row.label }</strong>
+									</td>
+									<td className="gatehouse-num">
+										{ sprintf(
+											/* translators: 1: calls with personal data, 2: all calls. */ __(
+												'%1$s of %2$s',
+												'gatehouse'
+											),
+											compact( row.pii_calls ),
+											compact( row.calls )
+										) }
+									</td>
+									<td>
+										<div className="gatehouse-chips">
+											{ Object.keys( row.types ).length
+												? Object.entries(
+														row.types
+												  ).map( ( [ type, n ] ) => (
+														<span
+															key={ type }
+															className="gatehouse-chip"
+														>
+															{ `${
+																TYPE_LABELS[
+																	type
+																] || type
+															} ${ compact(
+																n
+															) }` }
+														</span>
+												  ) )
+												: '–' }
+										</div>
+									</td>
+									<td>
+										<Switch
+											checked={ !! redactsFor( row ) }
+											onChange={ ( v ) =>
+												setRedact( row, v )
+											}
+											disabled={ ! r.enabled }
+											label={ sprintf(
+												/* translators: %s: plugin or theme name. */ __(
+													'Redact personal data for %s',
+													'gatehouse'
+												),
+												row.label
+											) }
+										/>
+									</td>
+								</tr>
+							) ) }
+						</tbody>
+					</table>
+				) : (
+					<p
+						className="gatehouse-muted"
+						style={ { padding: 20, margin: 0 } }
+					>
+						{ __(
+							'No AI calls in the last 30 days yet. Plugins appear here after their first AI request.',
+							'gatehouse'
+						) }
+					</p>
+				) }
+			</Card>
+
+			<DataMapCard />
+
 			<Card bodyClass={ null } style={ { marginBottom: 18 } }>
 				<Setting
 					title={ __(
-						'Redact personal data in AI requests',
+						'Check requests for personal data',
 						'gatehouse'
 					) }
 					desc={ __(
-						'Applies to every source except those set to “Skip redaction” on the Sources page.',
+						'Scans each AI request and records what kind of personal data it contained (never the values). Detection alone sends every request unchanged. Turning this off also stops redaction.',
 						'gatehouse'
 					) }
 				>
@@ -195,7 +319,10 @@ export default function Privacy() {
 						onChange={ ( v ) =>
 							patch( 'redaction', { enabled: v } )
 						}
-						label={ __( 'Redact personal data', 'gatehouse' ) }
+						label={ __(
+							'Check requests for personal data',
+							'gatehouse'
+						) }
 					/>
 				</Setting>
 			</Card>
@@ -208,8 +335,11 @@ export default function Privacy() {
 				aria-disabled={ ! r.enabled }
 			>
 				<Card
-					title={ __( 'Detectors', 'gatehouse' ) }
-					sub={ __( 'What to look for in prompts', 'gatehouse' ) }
+					title={ __( 'What to look for', 'gatehouse' ) }
+					sub={ __(
+						'Each type is detected in every request, and replaced only for plugins with redaction on',
+						'gatehouse'
+					) }
 					style={ { marginBottom: 18 } }
 				>
 					<div className="gatehouse-detectors">
@@ -260,7 +390,7 @@ export default function Privacy() {
 						className="gatehouse-span-5"
 						title={ __( 'Custom terms', 'gatehouse' ) }
 						sub={ __(
-							'Names, project codes or anything else that must never reach an AI provider',
+							'Names, project codes or anything else to watch for',
 							'gatehouse'
 						) }
 					>
@@ -279,7 +409,7 @@ export default function Privacy() {
 							style={ { fontSize: 12.5, marginTop: 10 } }
 						>
 							{ __(
-								'Matching ignores upper and lower case. Each term becomes',
+								'Whole words only, ignoring upper and lower case: “Ann” matches “ann” but not “annual”. Each term becomes',
 								'gatehouse'
 							) }{ ' ' }
 							<span className="gatehouse-token">[TERM_1]</span>,{ ' ' }
@@ -290,7 +420,7 @@ export default function Privacy() {
 						className="gatehouse-span-7"
 						title={ __( 'Try it', 'gatehouse' ) }
 						sub={ __(
-							'Live preview with your unsaved settings',
+							'What a provider receives from a plugin with redaction on, using your unsaved settings',
 							'gatehouse'
 						) }
 					>
@@ -306,6 +436,193 @@ export default function Privacy() {
 				discard={ discard }
 			/>
 		</div>
+	);
+}
+
+const PROVIDER_NAMES = {
+	anthropic: 'Anthropic',
+	openai: 'OpenAI',
+	google: 'Google',
+	openrouter: 'OpenRouter',
+	xai: 'xAI',
+	mistral: 'Mistral',
+	deepseek: 'DeepSeek',
+	groq: 'Groq',
+	perplexity: 'Perplexity',
+	ollama: 'Ollama',
+	webllm: __( 'WebLLM (in the browser)', 'gatehouse' ),
+};
+
+/**
+ * Turn rows into CSV text (RFC 4180 quoting).
+ *
+ * @param {Array[]} rows Rows of cells.
+ * @return {string} CSV.
+ */
+function toCsv( rows ) {
+	return rows
+		.map( ( row ) =>
+			row
+				.map( ( cell ) => {
+					const text =
+						cell === null || cell === undefined
+							? ''
+							: String( cell );
+					return /[",\n\r]/.test( text )
+						? `"${ text.replace( /"/g, '""' ) }"`
+						: text;
+				} )
+				.join( ',' )
+		)
+		.join( '\r\n' );
+}
+
+function DataMapCard() {
+	const [ days, setDays ] = useState( 90 );
+	const [ busy, setBusy ] = useState( false );
+	const toast = useToast();
+
+	const download = () => {
+		setBusy( true );
+		send( `data-map?days=${ days }`, 'GET' )
+			.then( ( map ) => {
+				const routes = {
+					ai_client: __( 'WordPress AI Client', 'gatehouse' ),
+					direct: __( 'Direct (own API key)', 'gatehouse' ),
+				};
+				const rows = [
+					[
+						__( 'Plugin or theme', 'gatehouse' ),
+						__( 'Type', 'gatehouse' ),
+						__( 'Source ID', 'gatehouse' ),
+						__( 'AI providers', 'gatehouse' ),
+						__( 'Models', 'gatehouse' ),
+						__( 'How it calls AI', 'gatehouse' ),
+						__( 'Calls', 'gatehouse' ),
+						__( 'Blocked calls', 'gatehouse' ),
+						__( 'Estimated cost (USD)', 'gatehouse' ),
+						__( 'Calls with personal data', 'gatehouse' ),
+						__( 'Personal data found', 'gatehouse' ),
+						__( 'Redaction', 'gatehouse' ),
+						__( 'Items replaced', 'gatehouse' ),
+						__( 'Monthly budget (USD)', 'gatehouse' ),
+						__( 'Hourly call limit', 'gatehouse' ),
+						__( 'Paused', 'gatehouse' ),
+						__( 'First call', 'gatehouse' ),
+						__( 'Last call', 'gatehouse' ),
+					],
+					...map.sources.map( ( r ) => [
+						r.label,
+						r.type,
+						r.id,
+						r.providers
+							.map( ( p ) => PROVIDER_NAMES[ p ] || p )
+							.join( '; ' ),
+						r.models.join( '; ' ),
+						r.routes.map( ( k ) => routes[ k ] || k ).join( '; ' ),
+						r.calls,
+						r.blocked,
+						r.cost.toFixed( 4 ),
+						r.pii_calls,
+						Object.entries( r.pii_types )
+							.map(
+								( [ type, n ] ) =>
+									`${ TYPE_LABELS[ type ] || type }: ${ n }`
+							)
+							.join( '; ' ),
+						r.redact
+							? __( 'On', 'gatehouse' )
+							: __( 'Off', 'gatehouse' ),
+						r.redactions,
+						r.budget || '',
+						r.rate_limit || '',
+						r.paused
+							? __( 'Yes', 'gatehouse' )
+							: __( 'No', 'gatehouse' ),
+						r.first_seen,
+						r.last_seen,
+					] ),
+				];
+				// A byte-order mark so spreadsheet apps read accented characters correctly.
+				const blob = new window.Blob( [ '﻿' + toCsv( rows ) ], {
+					type: 'text/csv;charset=utf-8',
+				} );
+				const link = document.createElement( 'a' );
+				link.href = window.URL.createObjectURL( blob );
+				link.download = `ai-data-map-${ map.from }-to-${ map.to }.csv`;
+				document.body.appendChild( link );
+				link.click();
+				link.remove();
+				window.setTimeout(
+					() => window.URL.revokeObjectURL( link.href ),
+					1000
+				);
+				toast(
+					sprintf(
+						/* translators: %d: number of plugins and themes. */ _n(
+							'Data map downloaded: %d source',
+							'Data map downloaded: %d sources',
+							map.sources.length,
+							'gatehouse'
+						),
+						map.sources.length
+					)
+				);
+			} )
+			.catch( ( e ) =>
+				toast(
+					e.message ||
+						__( 'Could not build the data map', 'gatehouse' ),
+					'alert'
+				)
+			)
+			.finally( () => setBusy( false ) );
+	};
+
+	return (
+		<Card
+			title={ __( 'AI data map', 'gatehouse' ) }
+			sub={ __(
+				'A spreadsheet of every plugin and theme that used AI: which providers and models, how it calls them, how often, what it cost, what personal data was found and which controls apply. Useful for GDPR records of processing, risk assessments and client reports. The values of personal data are never included.',
+				'gatehouse'
+			) }
+			style={ { marginBottom: 18 } }
+		>
+			<div
+				className="gatehouse-row"
+				style={ { gap: 12, flexWrap: 'wrap' } }
+			>
+				<Segmented
+					label={ __( 'Period', 'gatehouse' ) }
+					value={ days }
+					onChange={ setDays }
+					options={ [
+						{ value: 30, label: __( '30 days', 'gatehouse' ) },
+						{ value: 90, label: __( '90 days', 'gatehouse' ) },
+						{ value: 365, label: __( '12 months', 'gatehouse' ) },
+					] }
+				/>
+				<Button
+					variant="primary"
+					icon="table"
+					onClick={ download }
+					disabled={ busy }
+				>
+					{ busy
+						? __( 'Preparing…', 'gatehouse' )
+						: __( 'Download CSV', 'gatehouse' ) }
+				</Button>
+			</div>
+			<p
+				className="gatehouse-muted"
+				style={ { fontSize: 12.5, marginTop: 10, marginBottom: 0 } }
+			>
+				{ __(
+					'Covers only what Gatehouse can see, and only as far back as your request history is kept (Settings → Logging).',
+					'gatehouse'
+				) }
+			</p>
+		</Card>
 	);
 }
 

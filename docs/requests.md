@@ -1,6 +1,6 @@
 # Requests
 
-The Requests page is a log of every AI call on your site, newest first.
+The Requests page is a log of every AI call Gatehouse sees, newest first: calls made through the WordPress AI Client, and calls plugins make to AI providers directly with their own API key.
 
 ![The Requests log](images/requests.png)
 
@@ -12,10 +12,10 @@ The Requests page is a log of every AI call on your site, newest first.
 | **Source** | The plugin or theme that made the call |
 | **Model** | The AI model that answered |
 | **Tokens in / out** | Tokens sent and tokens received (output includes any "thinking" tokens the model reports) |
-| **Cost** | Estimated cost. **n/a** means the model has no price yet. |
+| **Cost** | Estimated cost. **n/a** means the cost isn't known: the model has no price yet, or the plugin read a streamed answer itself so the token counts weren't available. The details say which. |
 | **Time** | How long the provider took to answer |
-| **Gateway** | Two icons: the shield lights up when personal data was redacted; the speech bubble lights up when the brand brief was added |
-| **Status** | **Completed**, **Blocked** (stopped by a pause or budget) or **Failed** (the provider returned an error) |
+| **Gateway** | Personal data in the request. Outlined shield: found and sent unchanged. Filled shield: replaced with placeholders (redaction on for that plugin). Grey: none found. |
+| **Status** | **Completed**, **Blocked** (stopped by a pause, a budget, an hourly limit or Connector Approval) or **Failed** (the provider returned an error) |
 
 ## Filters
 
@@ -24,7 +24,7 @@ Filters sit in one row above the table and work together:
 - **All / Completed / Blocked / Failed:** filter by status.
 - **All sources:** show one plugin or theme.
 - **All models:** show one model.
-- **With redactions:** only calls where personal data was replaced.
+- **With personal data:** only calls where personal data was found.
 - **Clear filters** resets them.
 
 Use **Refresh** to load calls made since you opened the page. Use **Previous / Next** at the bottom to page through the log, 25 calls at a time.
@@ -35,14 +35,15 @@ Click any row, or select it and press Enter, to open its details.
 
 ![Details of one request](images/request-detail.png)
 
-The panel shows the time, source, provider, model, capability (for example text generation), input and output tokens, estimated cost, response time, how many items were redacted and whether the brand brief was added.
+The panel shows the time, source, provider, model, capability (for example text generation), input and output tokens, estimated cost, the **route** (WordPress AI Client, or direct with the plugin's own key), response time, the **personal data** found (kinds and counts) and whether it was **sent unchanged** or with items replaced.
 
-- **Blocked calls** show why, for example *Monthly budget reached* or *Source is paused*.
+- **Blocked calls** show why, for example *Monthly budget reached*, *Hourly limit reached* or *Source is paused*.
+- **Calls without a cost** show why, for example *Streamed answer read by the plugin itself*.
 - **Failed calls** show the provider's error, for example *HTTP 529: Overloaded*.
 
 ### Prompt and response text
 
-By default Gatehouse **does not store** prompt or response text, only the facts above. If you need the text for debugging, turn on **Store prompt and response excerpts** in [Settings](settings.md#logging). The first 1,000 characters of each prompt (as sent, after redaction) and each response are then shown here for new calls.
+By default Gatehouse **does not store** prompt or response text, only the facts above. If you need the text for debugging, turn on **Store prompt and response excerpts** in [Settings](settings.md#logging). The first 1,000 characters of each prompt and each response are then shown here for new calls. Personal data that Gatehouse detects is always masked in the stored prompt, even for plugins without redaction. Responses are stored as received and can contain customer data.
 
 ## How long calls are kept
 

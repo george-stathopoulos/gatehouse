@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Gatehouse_Ledger {
 
-	const DB_VERSION        = '2';
+	const DB_VERSION        = '4';
 	const DB_VERSION_OPTION = 'gatehouse_db_version';
 
 	/**
@@ -60,7 +60,8 @@ final class Gatehouse_Ledger {
 				priced tinyint(1) NOT NULL DEFAULT 1,
 				latency_ms int(10) unsigned NOT NULL DEFAULT 0,
 				redactions smallint(5) unsigned NOT NULL DEFAULT 0,
-				brief tinyint(1) NOT NULL DEFAULT 0,
+				pii varchar(191) NOT NULL DEFAULT '',
+				channel varchar(16) NOT NULL DEFAULT 'ai_client',
 				note varchar(255) NOT NULL DEFAULT '',
 				prompt_hash char(40) NOT NULL DEFAULT '',
 				cached tinyint(1) NOT NULL DEFAULT 0,
@@ -111,7 +112,8 @@ final class Gatehouse_Ledger {
 				'priced'           => 1,
 				'latency_ms'       => 0,
 				'redactions'       => 0,
-				'brief'            => 0,
+				'pii'              => '',
+				'channel'          => 'ai_client',
 				'note'             => '',
 				'prompt_excerpt'   => null,
 				'response_excerpt' => null,
@@ -153,6 +155,19 @@ final class Gatehouse_Ledger {
 		do_action( 'gatehouse_recorded', $id, $row );
 
 		return $id;
+	}
+
+	/**
+	 * Calls a source made in the last hour (completed or failed; blocked calls don't count).
+	 *
+	 * @param string $source Source id.
+	 * @return int
+	 */
+	public static function calls_last_hour( $source ) {
+		global $wpdb;
+		$since = gmdate( 'Y-m-d H:i:s', current_time( 'timestamp' ) - HOUR_IN_SECONDS ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE source = %s AND created_at >= %s AND status <> 'blocked'", self::table(), $source, $since ) );
 	}
 
 	/**
