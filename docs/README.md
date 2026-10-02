@@ -6,6 +6,8 @@ Gatehouse shows you every AI call your WordPress site makes. It tells you which 
 
 ## Start here
 
+- **[Try the live demo](https://george-stathopoulos.github.io/gatehouse/demo/)**: Gatehouse with three months of sample data, in your browser.
+
 - **[Getting started](getting-started.md)**: requirements, installation, the setup guide, Connector Approval, demo data and the in-plugin Help.
 
 ## Using Gatehouse
@@ -23,6 +25,7 @@ Gatehouse shows you every AI call your WordPress site makes. It tells you which 
 ## Reference
 
 - **[How costs are calculated](costs-and-pricing.md)**: the cost formula, where prices come from and how they are updated.
+- **[Private AI with WebLLM](local-ai.md)**: download, install and check the free in-browser AI provider.
 - **[Your data](data.md)**: what Gatehouse stores, for how long, and what uninstalling removes.
 - **[FAQ](faq.md)**
 - **[Troubleshooting](troubleshooting.md)**

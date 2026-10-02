@@ -79,7 +79,7 @@ Turn on automatic price updates, or add the model's price yourself. Calls made b
 
 [AI Provider for WebLLM](https://github.com/ProgressPlanner/ai-provider-for-webllm) runs a language model inside the browser (WebGPU): no API key, no cloud and no per-request bill. Gatehouse logs its calls like any other, with the plugin, model and tokens, at a cost of **$0**, so they never show as unpriced and never use up a budget.
 
-To use it, install and activate the plugin, choose a model under **Settings → WebLLM**, and turn on **In-browser worker**: AI calls that plugins start on the server are then answered by the model in an open dashboard tab. If the worker is off, the Overview tells you. Your site needs HTTPS (or `localhost`) and a browser with WebGPU.
+To set it up, follow [Private AI with WebLLM](local-ai.md): download, install, choose a model, turn on the in-browser worker and check it works.
 
 Developers can mark other local providers as free with the `gatehouse_local_providers` filter.
 

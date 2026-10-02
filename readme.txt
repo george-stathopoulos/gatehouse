@@ -144,7 +144,7 @@ The model isn't in the price table yet. Turn on automatic price updates, which c
 == Changelog ==
 
 = 1.5.0 =
-* New: works with AI Provider for WebLLM, which runs AI models privately in the browser. Its calls are logged at $0, and the dashboard suggests it when no provider is connected, or says when its in-browser worker is off.
+* New: works with AI Provider for WebLLM, which runs AI models privately in the browser, with a step-by-step setup guide. Its calls are logged at $0, and the dashboard suggests it when no provider is connected, or says when its in-browser worker is off.
 * New: the documentation is also in the plugin's GitHub repository.
 * The website links to the author's other projects.
 

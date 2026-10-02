@@ -18,7 +18,7 @@ Plugins that call an AI provider directly with their own API key, bypassing the 
 ### Which AI providers are supported?
 Anthropic (Claude), OpenAI (GPT) and Google (Gemini) are supported for cost tracking, redaction and the brand brief. Cost tracking works for any provider that reports token usage to the AI Client. A developer can add more providers for redaction and the brief; see [For developers](developers.md#adding-a-provider).
 
-That includes [AI Provider for WebLLM](https://github.com/ProgressPlanner/ai-provider-for-webllm), which runs a model privately in your browser at no cost. Gatehouse logs its calls at $0 ([details](costs-and-pricing.md#local-models-webllm)).
+That includes [AI Provider for WebLLM](https://github.com/ProgressPlanner/ai-provider-for-webllm), which runs a model privately in your browser at no cost. Gatehouse logs its calls at $0 ([set it up](local-ai.md)).
 
 ### Does Gatehouse need its own API key or account?
 No. It uses the AI provider you connect under **Settings → Connectors**. There is no Gatehouse account or service.
