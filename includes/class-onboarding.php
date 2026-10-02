@@ -41,7 +41,7 @@ final class Gatehouse_Onboarding {
 		}
 		delete_transient( self::REDIRECT );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only check of WordPress's own bulk-activation flag.
-		if ( wp_doing_ajax() || is_network_admin() || isset( $_GET['activate-multi'] ) || ! current_user_can( 'manage_options' ) ) {
+		if ( self::done() || wp_doing_ajax() || is_network_admin() || isset( $_GET['activate-multi'] ) || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 		wp_safe_redirect( admin_url( 'admin.php?page=gatehouse#/welcome' ) );

@@ -146,7 +146,8 @@ The model isn't in the price table yet. Turn on automatic price updates, which c
 = 1.5.0 =
 * New: works with AI Provider for WebLLM, which runs AI models privately in the browser, with a step-by-step setup guide. Its calls are logged at $0, and the dashboard suggests it when no provider is connected, or says when its in-browser worker is off.
 * New: the documentation is also in the plugin's GitHub repository.
-* The website links to the author's other projects.
+* The website links to the author's other projects, and has a live demo.
+* Fix: the setup guide no longer opens right after activation when it was already completed (for example from WP-CLI).
 
 = 1.4.0 =
 * AI Gateway is now Gatehouse. Same plugin, new name.
