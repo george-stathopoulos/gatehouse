@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gatehouse – AI cost, budget and privacy control for WordPress</title>
+<meta name="description" content="Free WordPress plugin that shows which plugin spends what on AI, caps spending with budgets that block, and removes personal data from AI requests. Built for the WordPress 7.0 AI Client.">
+<meta name="theme-color" content="#4a3aa7">
+<link rel="canonical" href="https://george-stathopoulos.github.io/gatehouse/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Gatehouse">
+<meta property="og:title" content="Gatehouse – AI cost, budget and privacy control for WordPress">
+<meta property="og:description" content="Free WordPress plugin that shows which plugin spends what on AI, caps spending with budgets that block, and removes personal data from AI requests. Built for the WordPress 7.0 AI Client.">
+<meta property="og:url" content="https://george-stathopoulos.github.io/gatehouse/">
+<meta property="og:image" content="https://george-stathopoulos.github.io/gatehouse/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-256.png">
+<link rel="stylesheet" href="assets/site.css?v=1.5.0">
+<script>try{var t=localStorage.getItem('gatehouse-site-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
+
+</head>
+<body data-root="">
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+	<div class="wrap">
+		<a class="brand" href="./"><span class="mark"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2a7 7 0 0 0-7 7v8a1 1 0 0 0 1 1h3v-6a3 3 0 0 1 6 0v6h3a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7Zm0 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg></span>Gatehouse</a>
+		<nav id="site-nav" class="nav" aria-label="Main">
+			<a href="#features">Features</a>
+			<a href="#how">How it works</a>
+			<a href="#pricing">Pricing</a>
+			<a href="pro/">Pro</a>
+			<a href="trust/">Privacy & security</a>
+			<a href="docs/">Help center</a>
+		</nav>
+		<div class="head-actions">
+			<button class="icon-btn" type="button" data-theme-toggle aria-label="Dark theme" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+			<a class="btn btn-primary btn-sm" href="downloads/gatehouse.zip" download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download free</a>
+			<button class="icon-btn menu-btn" type="button" data-menu-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+		</div>
+	</div>
+</header>
+<main id="main">
+
+<section class="hero">
+	<div class="wrap">
+		<span class="eyebrow"><b>NEW</b> Built for the AI Client in WordPress 7.0</span>
+		<h1>Every AI call on your site. <em>Seen, capped and private.</em></h1>
+		<p class="lede">Gatehouse sits between your plugins and your AI provider. See which plugin spends what, stop runaway bills with budgets that actually block, and keep customer data out of AI requests. No setup in your other plugins.</p>
+		<div class="cta-row">
+			<a class="btn btn-primary" href="downloads/gatehouse.zip" download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download free · v1.5.0</a>
+			<a class="btn btn-ghost" href="docs/getting-started/">See how it works <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+		</div>
+		<p class="hero-note">Free and open source · 177 KB · WordPress 7.0+ · PHP 7.4+ · Coming soon to WordPress.org</p>
+		<div class="hero-shot">
+			<div class="browser" data-zoom>
+				<div class="browser-bar"><i></i><i></i><i></i><span>yoursite.com/wp-admin/admin.php?page=gatehouse</span></div>
+				<img src="assets/img/overview.jpg" width="1800" height="1125" alt="The Gatehouse overview: AI spend for the last 30 days by plugin, the monthly budget, items that need attention and key numbers." fetchpriority="high" decoding="async">
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="section section-alt" aria-labelledby="problem-title">
+	<div class="wrap">
+		<div class="section-head">
+			<span class="kicker">The problem</span>
+			<h2 id="problem-title">WordPress 7.0 gave every plugin your AI key</h2>
+			<p>Connect Anthropic, OpenAI or Google once, and every plugin on your site can use it. That's convenient. It also creates three new risks.</p>
+		</div>
+		<div class="stats">
+			<div class="stat"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg></span><strong>One shared bill, no limit</strong><p>WordPress has no spending cap. One buggy plugin or a spam wave can run up hundreds of dollars before your provider's invoice arrives.</p></div>
+			<div class="stat"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 6c6 0 10 6 10 6a17 17 0 0 1-3.2 3.7M6.6 6.6C3.8 8.4 2 12 2 12s4 6 10 6a9.6 9.6 0 0 0 4.3-1"/></svg></span><strong>No idea who spent it</strong><p>Your provider bills one API key. It can't tell you whether the SEO plugin, the chatbot or the alt-text tool made the calls.</p></div>
+			<div class="stat"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v10H4zM8 20h8M12 14v6"/><path d="M9 8l6 3"/></svg></span><strong>Customer data leaves your site</strong><p>Emails, phone numbers and order details inside prompts go straight to a third-party AI provider, which matters under GDPR.</p></div>
+		</div>
+	</div>
+</section>
+
+<section class="section" id="how" aria-labelledby="how-title">
+	<div class="wrap">
+		<div class="section-head">
+			<span class="kicker">How it works</span>
+			<h2 id="how-title">A gatehouse for your site's AI</h2>
+			<p>Every AI request passes through Gatehouse on your own server. It checks, cleans and records it, in milliseconds.</p>
+		</div>
+		<ol class="flow">
+			<li><h3>A plugin asks for AI</h3><p>For example, to write a product description through the WordPress AI Client.</p></li>
+			<li class="is-gate"><h3>Gatehouse checks</h3><p>Identifies the plugin. Over budget or paused? The request stops here, before anything is charged.</p><small>BUDGETS</small></li>
+			<li class="is-gate"><h3>Gatehouse cleans</h3><p>Personal data becomes placeholders like [EMAIL_1]. Your brand brief is added.</p><small>PRIVACY</small></li>
+			<li><h3>The provider answers</h3><p>Anthropic, OpenAI or Google only ever see the cleaned request.</p></li>
+			<li class="is-gate"><h3>Gatehouse records</h3><p>Real values go back into the answer. The call is logged with plugin, model, tokens and cost.</p><small>VISIBILITY</small></li>
+		</ol>
+	</div>
+</section>
+
+<section class="section section-alt" id="features" aria-labelledby="features-title">
+	<div class="wrap">
+		<div class="section-head">
+			<span class="kicker">Features</span>
+			<h2 id="features-title">Everything you need. Free.</h2>
+			<p>The free plugin is complete. No feature is locked or time-limited.</p>
+		</div>
+
+		<div class="feature">
+			<div class="feature-text">
+				<span class="pill">See where the money goes</span>
+				<h3>Know exactly which plugin spends what</h3>
+				<p>Every AI call is traced to the plugin or theme that made it, with its model, tokens, cost and response time.</p>
+				<ul class="ticks">
+					<li>Daily spend chart, model mix and activity heatmap</li>
+					<li>A month-end forecast based on your real pace</li>
+					<li>A searchable log of every call, with a detail panel</li>
+				</ul>
+			</div>
+			<figure class="shot" data-zoom><img src="assets/img/requests.jpg" width="1800" height="1125" alt="The Requests log listing each AI call with its plugin, model, tokens, cost and status." loading="lazy" decoding="async"></figure>
+		</div>
+
+		<div class="feature flip">
+			<div class="feature-text">
+				<span class="pill">Budgets that block</span>
+				<h3>Cap spending per plugin, and for the whole site</h3>
+				<p>Set a monthly budget for any plugin. When it's reached, Gatehouse stops further calls before they reach the provider, so they cost nothing.</p>
+				<ul class="ticks">
+					<li>Per-plugin and site-wide monthly budgets</li>
+					<li>Pause any plugin's AI with one switch</li>
+					<li>Email alerts at 80% (or your threshold) and at 100%</li>
+					<li>Warnings when a plugin is on pace to overspend</li>
+				</ul>
+			</div>
+			<figure class="shot" data-zoom><img src="assets/img/sources.jpg" width="1800" height="1125" alt="The Sources page showing each plugin with its spend, monthly budget meter and status such as Active, Paused or On pace to exceed." loading="lazy" decoding="async"></figure>
+		</div>
+
+		<div class="feature">
+			<div class="feature-text">
+				<span class="pill">Privacy by default</span>
+				<h3>Customer data stays on your site</h3>
+				<p>Before a request leaves your server, Gatehouse swaps personal data for placeholders. When the answer comes back, the real values go back in, so your plugins keep working.</p>
+				<ul class="ticks">
+					<li>Emails, phone numbers, card numbers, IBANs, US SSNs and optionally IP addresses</li>
+					<li>Your own terms: customer names, project code names</li>
+					<li>A live tester shows exactly what the provider receives</li>
+				</ul>
+			</div>
+			<figure class="shot" data-zoom><img src="assets/img/privacy.jpg" width="1800" height="1423" alt="The Privacy page with detectors for emails, phones, cards, IBANs and SSNs, custom terms and a live redaction tester." loading="lazy" decoding="async"></figure>
+		</div>
+
+		<div class="feature flip">
+			<div class="feature-text">
+				<span class="pill">One voice</span>
+				<h3>Make every plugin sound like your brand</h3>
+				<p>Write one brand brief (tone, spelling, rules such as “never promise refunds”) and Gatehouse adds it to every AI request on the site. See what it costs per month, and switch it off for individual plugins.</p>
+			</div>
+			<figure class="shot" data-zoom><img src="assets/img/brief.jpg" width="1800" height="1728" alt="The Brand brief page with the brief text and its estimated monthly cost." loading="lazy" decoding="async"></figure>
+		</div>
+
+		<div class="grid-3" style="margin-top:96px">
+			<div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z"/></svg></span><h3>Two-minute setup guide</h3><p>A step-by-step guide opens on activation: connect a provider, approve plugins and set a budget.</p></div>
+			<div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><h3>Demo data</h3><p>Explore with realistic sample data in a separate sandbox. Your real data is never touched.</p></div>
+			<div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .8-3 2s1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5M12 6v2M12 16v2"/></svg></span><h3>Live model prices</h3><p>Optional daily price updates for Anthropic, OpenAI and Google models. Your own rates always win.</p></div>
+			<div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></span><h3>Works with Connector Approval</h3><p>Shows the calls blocked by the AI plugin's Connector Approval and which plugins are waiting.</p></div>
+			<div class="card"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg></span><h3>Help built in</h3><p>Guides, FAQ, glossary and tooltips inside WordPress, plus this <a href="docs/">help center</a>.</p></div>
+			<div class="card"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span><h3>Light and dark</h3><p>A fast, accessible dashboard that matches your preference and works on phones too.</p></div>
+		</div>
+	</div>
+</section>
+
+<section class="section" id="save" aria-labelledby="save-title">
+	<div class="wrap">
+		<div class="section-head">
+			<span class="kicker">Save money</span>
+			<h2 id="save-title">What could Gatehouse save you?</h2>
+			<p>Two ways: budgets stop runaway spending (free), and caching stops paying twice for the same answer (Pro). Move the sliders.</p>
+		</div>
+		<div class="calc" data-calc>
+			<div class="calc-in">
+				<label for="calc-spend">Your AI spend <output>$150 / month</output></label>
+				<input id="calc-spend" type="range" min="10" max="2000" step="10" value="150">
+				<span class="help">Your total monthly bill from Anthropic, OpenAI or Google.</span>
+				<label for="calc-repeat">Repeated requests <output>20%</output></label>
+				<input id="calc-repeat" type="range" min="0" max="60" step="1" value="20">
+				<span class="help">Requests identical to an earlier one. Moderation, tagging and alt text often repeat. The free plugin measures this for you.</span>
+				<label for="calc-runaway">Runaway incidents <output>1 time / year</output></label>
+				<input id="calc-runaway" type="range" min="0" max="6" step="1" value="1">
+				<span class="help">A plugin loop, bug or spam wave that burns about a month's spend before anyone notices.</span>
+			</div>
+			<div class="calc-out" aria-live="polite">
+				<span class="lbl">Estimated savings per year</span>
+				<div class="big" data-out="total">$0</div>
+				<div class="row" style="margin-top:22px"><span>Budgets stop runaways (free)</span><b data-out="runaway">$0</b></div>
+				<div class="row"><span>Caching repeats (Pro)</span><b data-out="cache">$0</b></div>
+				<div class="row"><span>Pro pays for itself</span><b data-out="payback">–</b></div>
+				<p class="fine">An estimate, not a promise. It assumes 90% of repeated requests can be cached and that a budget stops a runaway incident before it costs a month's spend.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section class="section section-alt" id="privacy" aria-labelledby="privacy-title">
+	<div class="wrap">
+		<div class="section-head">
+			<span class="kicker">Privacy</span>
+			<h2 id="privacy-title">Your provider sees placeholders, not people</h2>
+			<p>Here is a real support prompt before and after Gatehouse. The AI still writes a perfect reply, and your plugin gets the real details back.</p>
+		</div>
+		<div class="redact">
+			<div class="redact-box">
+				<h3>What your plugin sends</h3>
+				<p>Hi, I'm Jane. Reply to <mark>jane.cooper@example.com</mark> or call <mark>+1 415 555 0134</mark>. My card <mark>4242 4242 4242 4242</mark> was charged twice.</p>
+			</div>
+			<div class="redact-arrow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+			<div class="redact-box">
+				<h3>What the AI provider receives</h3>
+				<p>Hi, I'm Jane. Reply to <span class="tok">[EMAIL_1]</span> or call <span class="tok">[PHONE_1]</span>. My card <span class="tok">[CARD_1]</span> was charged twice.</p>
+			</div>
+		</div>
+		<div class="grid-3" style="margin-top:56px">
+			<a class="card" href="trust/#privacy"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></span><h3>Nothing leaves your site</h3><p>Gatehouse doesn't phone home, track usage or need an account. Your log lives in your own database.</p><span class="more">Privacy details →</span></a>
+			<a class="card" href="trust/#security"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><h3>Secure by design</h3><p>Admin-only, uses WordPress's own AI hooks, never stores your API keys, and passes WordPress Plugin Check.</p><span class="more">Security details →</span></a>
+			<a class="card" href="trust/#compliance"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></span><h3>GDPR-ready</h3><p>Works with WordPress's export and erase tools and suggests text for your privacy policy.</p><span class="more">Compliance details →</span></a>
+		</div>
+	</div>
+</section>
+
+<section class="section" aria-labelledby="see-title">
+	<div class="wrap">
+		<div class="section-head">
+			<span class="kicker">Take a look</span>
+			<h2 id="see-title">Designed to be understood in seconds</h2>
+			<p>Clear numbers, plain language, and help wherever you need it. Click any screenshot to enlarge it.</p>
+		</div>
+		<div class="grid-3 gallery">
+			<figure class="shot" data-zoom><img src="assets/img/setup-2.jpg" width="1800" height="1125" alt="Step two of the setup guide: connecting an AI provider." loading="lazy" decoding="async"><figcaption>Step-by-step setup guide</figcaption></figure>
+			<figure class="shot" data-zoom><img src="assets/img/request-detail.jpg" width="1800" height="1125" alt="The detail panel for a single AI call, showing tokens, cost, redactions and timing." loading="lazy" decoding="async"><figcaption>Every call, in detail</figcaption></figure>
+			<figure class="shot" data-zoom><img src="assets/img/overview-dark.jpg" width="1800" height="1125" alt="The Overview in dark mode." loading="lazy" decoding="async"><figcaption>Light and dark mode</figcaption></figure>
+			<figure class="shot" data-zoom><img src="assets/img/settings-prices.jpg" width="1800" height="1319" alt="The model price table with automatic daily updates." loading="lazy" decoding="async"><figcaption>Always-current model prices</figcaption></figure>
+			<figure class="shot" data-zoom><img src="assets/img/help.jpg" width="1248" height="1800" alt="The in-plugin Help page with search, guides, FAQ and glossary." loading="lazy" decoding="async"><figcaption>Help built into WordPress</figcaption></figure>
+			<figure class="shot" data-zoom><img src="assets/img/pro-caching.jpg" width="1798" height="1800" alt="The Pro Caching page showing savings, hit rate and per-plugin cache settings." loading="lazy" decoding="async"><figcaption>Pro: response caching</figcaption></figure>
+		</div>
+	</div>
+</section>
+
+<section class="section section-alt" id="pricing" aria-labelledby="pricing-title">
+	<div class="wrap">
+		<div class="section-head">
+			<span class="kicker">Pricing</span>
+			<h2 id="pricing-title">Free to protect. Pro to save more.</h2>
+			<p>The free plugin does everything above. Add Pro when the free plugin shows you're paying for repeated requests.</p>
+		</div>
+		<div class="plans">
+	<div class="plan">
+		<h3>Gatehouse</h3>
+		<p class="for">Everything you need to see, cap and protect your site's AI.</p>
+		<div class="price"><b>$0</b><span>forever</span></div>
+		<ul class="ticks">
+			<li>Per-plugin cost tracking</li>
+			<li>Budgets that block spending</li>
+			<li>Personal data redaction</li>
+			<li>Brand brief</li>
+			<li>Alerts, forecasts, request log</li>
+			<li>Repeated-request report</li>
+		</ul>
+		<a class="btn btn-ghost" href="downloads/gatehouse.zip" download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download free</a>
+	</div>
+	<div class="plan">
+		<h3>Pro · 1 site</h3>
+		<p class="for">For a single business or shop.</p>
+		<div class="price"><b>$79</b><span>/ year</span></div>
+		<ul class="ticks">
+			<li>Everything in free</li>
+			<li>Response caching</li>
+			<li>Per-plugin cache control</li>
+			<li>Savings report</li>
+			<li>1 year of updates and support</li>
+		</ul>
+		<a class="btn btn-ghost" aria-disabled="true" role="link" tabindex="-1">Launching soon</a>
+	</div>
+	<div class="plan is-featured">
+		<span class="badge">Best value</span>
+		<h3>Pro · 5 sites</h3>
+		<p class="for">For freelancers and small studios.</p>
+		<div class="price"><b>$199</b><span>/ year</span></div>
+		<ul class="ticks">
+			<li>Everything in Pro</li>
+			<li>Use on up to 5 sites</li>
+			<li>Priority support</li>
+		</ul>
+		<a class="btn btn-ghost" aria-disabled="true" role="link" tabindex="-1">Launching soon</a>
+	</div>
+	<div class="plan">
+		<h3>Pro · Unlimited</h3>
+		<p class="for">For agencies that manage many sites.</p>
+		<div class="price"><b>$399</b><span>/ year</span></div>
+		<ul class="ticks">
+			<li>Everything in Pro</li>
+			<li>Unlimited sites</li>
+			<li>Priority support</li>
+		</ul>
+		<a class="btn btn-ghost" aria-disabled="true" role="link" tabindex="-1">Launching soon</a>
+	</div>
+</div>
+<p class="plan-note">Prices in US dollars. Pro is an add-on and needs the free plugin. If your license expires, caching switches off and requests go to your provider as normal. The free plugin never stops working.</p>
+	</div>
+</section>
+
+<section class="section" id="faq" aria-labelledby="faq-title">
+	<div class="wrap">
+		<div class="section-head">
+			<span class="kicker">FAQ</span>
+			<h2 id="faq-title">Questions, answered</h2>
+		</div>
+		<div class="faq"><details><summary>Which plugins does it work with?</summary><div><p>Any plugin or theme that uses the AI Client built into WordPress 7.0 (<code>wp_ai_client_prompt()</code>). They need no changes. Plugins that call an AI provider directly with their own API key bypass the AI Client, so Gatehouse can't see them.</p></div></details><details><summary>Does Gatehouse need its own API key or account?</summary><div><p>No. It works with the provider you connect under <strong>Settings → Connectors</strong>, and never stores or sees your key itself.</p></div></details><details><summary>Will it slow my site down?</summary><div><p>Not noticeably. It does a budget lookup from a cached total, one pass over the prompt text and one database insert per call, all on your server.</p></div></details><details><summary>What happens when a plugin reaches its budget?</summary><div><p>Its next AI call is stopped before anything is sent, and the plugin receives the same error WordPress uses when AI is unavailable. Well-behaved plugins hide their AI features until the budget resets on the 1st of the month.</p></div></details><details><summary>Are the costs exact?</summary><div><p>They're close estimates: the token counts your provider reports, multiplied by current model prices. Your provider's invoice is always the source of truth. <a href="docs/costs-and-pricing/">How costs are calculated</a>.</p></div></details><details><summary>Does Gatehouse send my data anywhere?</summary><div><p>No. Its only optional outside request is a daily download of public model prices, which sends nothing about your site. <a href="trust/#privacy">Privacy details</a>.</p></div></details><details><summary>Is it accessible?</summary><div><p>Yes. The dashboard is designed to meet WCAG 2.2 AA: fully keyboard operable, a table view for every chart, never colour alone, and reduced-motion support. <a href="trust/#accessibility">Accessibility details</a>.</p></div></details></div>
+		<p style="text-align:center;margin-top:28px"><a href="docs/faq/">See all questions in the help center →</a></p>
+	</div>
+</section>
+
+<section class="section" aria-labelledby="more-title" style="padding-top:0">
+	<div class="wrap">
+		<div class="section-head"><span class="kicker">More from the maker</span><h2 id="more-title">Other projects</h2></div>
+		<div class="grid-3">
+			<a class="card" href="https://george-stathopoulos.github.io/helpdesk-hero/"><h3>Helpdesk Hero</h3><p>WordPress support with diagnostics and password-free access</p><span class="more">Visit the website →</span></a>
+			<a class="card" href="https://george-stathopoulos.github.io/#projects"><h3>All projects</h3><p>Everything George Stathopoulos has built, in one place.</p><span class="more">See all →</span></a>
+		</div>
+	</div>
+</section>
+
+<section class="section" style="padding-top:0">
+	<div class="wrap">
+		<div class="cta-band">
+			<h2>Put a gatehouse in front of your AI</h2>
+			<p>Install in a minute. See every call, cap every plugin and keep customer data on your site.</p>
+			<div class="cta-row">
+				<a class="btn btn-light" href="downloads/gatehouse.zip" download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download free · v1.5.0</a>
+				<a class="btn btn-outline-light" href="docs/">Read the help center</a>
+			</div>
+		</div>
+	</div>
+</section>
+</main>
+<footer class="site-foot">
+	<div class="wrap">
+		<div class="foot-grid">
+			<div class="foot-about">
+				<a class="brand" href="./"><span class="mark"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2a7 7 0 0 0-7 7v8a1 1 0 0 0 1 1h3v-6a3 3 0 0 1 6 0v6h3a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7Zm0 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg></span>Gatehouse</a>
+				<p>Cost, budget and privacy control for every AI call your WordPress site makes. Free and open source (GPL).</p>
+			</div>
+			<div>
+				<h2>Product</h2>
+				<ul>
+					<li><a href="#features">Features</a></li>
+					<li><a href="#pricing">Pricing</a></li>
+					<li><a href="pro/">Gatehouse Pro</a></li>
+					<li><a href="changelog/">Changelog</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>Help</h2>
+				<ul>
+					<li><a href="docs/">Help center</a></li>
+					<li><a href="docs/getting-started/">Getting started</a></li>
+					<li><a href="docs/faq/">FAQ</a></li>
+					<li><a href="docs/troubleshooting/">Troubleshooting</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>More projects</h2>
+				<ul>
+					<li><a href="https://george-stathopoulos.github.io/helpdesk-hero/" title="WordPress support with diagnostics and password-free access">Helpdesk Hero</a></li>
+					<li><a href="https://george-stathopoulos.github.io/#projects">All projects</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>Trust</h2>
+				<ul>
+					<li><a href="trust/#privacy">Privacy</a></li>
+					<li><a href="trust/#security">Security</a></li>
+					<li><a href="trust/#compliance">GDPR</a></li>
+					<li><a href="trust/#accessibility">Accessibility</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="foot-bottom">
+			<span>Made with <span class="heart" role="img" aria-label="love">♥</span> by <a href="https://george-stathopoulos.github.io/">George Stathopoulos</a></span>
+			<span>Gatehouse 1.5.0 · This website uses no cookies and no tracking.</span>
+		</div>
+	</div>
+</footer>
+<script src="assets/site.js?v=1.5.0" defer></script>
+</body>
+</html>

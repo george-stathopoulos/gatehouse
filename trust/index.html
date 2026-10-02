@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy, security and accessibility · Gatehouse</title>
+<meta name="description" content="How Gatehouse handles your data: what it stores, what it never sends, security practices, GDPR tools and WCAG 2.2 AA accessibility.">
+<meta name="theme-color" content="#4a3aa7">
+<link rel="canonical" href="https://george-stathopoulos.github.io/gatehouse/trust/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Gatehouse">
+<meta property="og:title" content="Privacy, security and accessibility · Gatehouse">
+<meta property="og:description" content="How Gatehouse handles your data: what it stores, what it never sends, security practices, GDPR tools and WCAG 2.2 AA accessibility.">
+<meta property="og:url" content="https://george-stathopoulos.github.io/gatehouse/trust/">
+<meta property="og:image" content="https://george-stathopoulos.github.io/gatehouse/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../assets/icon-256.png">
+<link rel="stylesheet" href="../assets/site.css?v=1.5.0">
+<script>try{var t=localStorage.getItem('gatehouse-site-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
+
+</head>
+<body data-root="../">
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+	<div class="wrap">
+		<a class="brand" href="../"><span class="mark"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2a7 7 0 0 0-7 7v8a1 1 0 0 0 1 1h3v-6a3 3 0 0 1 6 0v6h3a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7Zm0 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg></span>Gatehouse</a>
+		<nav id="site-nav" class="nav" aria-label="Main">
+			<a href="../index.html#features">Features</a>
+			<a href="../index.html#how">How it works</a>
+			<a href="../index.html#pricing">Pricing</a>
+			<a href="../pro/">Pro</a>
+			<a href="../trust/" aria-current="page">Privacy & security</a>
+			<a href="../docs/">Help center</a>
+		</nav>
+		<div class="head-actions">
+			<button class="icon-btn" type="button" data-theme-toggle aria-label="Dark theme" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+			<a class="btn btn-primary btn-sm" href="../downloads/gatehouse.zip" download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download free</a>
+			<button class="icon-btn menu-btn" type="button" data-menu-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+		</div>
+	</div>
+</header>
+<main id="main">
+
+<section class="page-head">
+	<div class="wrap">
+		<span class="kicker">Trust</span>
+		<h1>Privacy, security and accessibility</h1>
+		<p>Gatehouse handles your AI traffic, so you should know exactly what it does with it. Here is everything, in plain language.</p>
+	</div>
+</section>
+<div class="wrap trust-layout">
+	<nav class="toc" aria-label="On this page" data-spy>
+		<h2>On this page</h2>
+		<ol><li><a href="#privacy">Privacy</a></li><li><a href="#security">Security</a></li><li><a href="#compliance">GDPR and compliance</a></li><li><a href="#accessibility">Accessibility</a></li><li><a href="#external-services">External services</a></li><li><a href="#report">Reporting a problem</a></li></ol>
+	</nav>
+	<div class="prose">
+		<h2 id="privacy">Privacy</h2>
+		<p><strong>Gatehouse does not send your data anywhere.</strong> It has no account, no tracking, no analytics and no “phone home”. Everything it records stays in your own WordPress database.</p>
+		<div class="facts">
+			<div class="fact"><b>What is stored</b><span>For each AI call: the plugin, model, token counts, estimated cost, timing, status and the WordPress user ID if someone was logged in.</span></div>
+			<div class="fact"><b>What is not stored</b><span>Prompt and response text, unless you turn on debugging excerpts. Your API keys are never stored or read by Gatehouse.</span></div>
+			<div class="fact"><b>Retention</b><span>Calls are deleted automatically after 90 days by default. Choose 30, 90, 180 or 365 days.</span></div>
+			<div class="fact"><b>Redaction</b><span>Emails, phone numbers, card numbers, IBANs, US SSNs, optional IP addresses and your own terms are replaced before a request leaves your server.</span></div>
+		</div>
+		<p>Repeated-request detection stores only a fingerprint (a one-way hash) of each request, never its text. With Pro caching, cached answers hold placeholders, not the personal data that redaction removed.</p>
+		<p>Uninstalling Gatehouse deletes its database tables, settings and scheduled tasks. Deactivating keeps them, so you can switch it back on.</p>
+		<p><a href="../docs/data/">What Gatehouse stores, in detail →</a></p>
+
+		<h2 id="security">Security</h2>
+		<ul>
+			<li><strong>Administrators only.</strong> Every screen and every API endpoint requires the <code>manage_options</code> capability, and every request is protected by WordPress's own nonces.</li>
+			<li><strong>No new attack surface.</strong> Gatehouse adds no public pages, forms or endpoints. It works only through WordPress's own AI Client hooks and HTTP API.</li>
+			<li><strong>Your keys stay where they are.</strong> API keys remain in WordPress's Connectors. Gatehouse never reads, copies or logs them.</li>
+			<li><strong>Safe database access.</strong> Every query is parameterised, so input can't be turned into SQL.</li>
+			<li><strong>Safe output.</strong> The dashboard renders all data as text, never as raw HTML.</li>
+			<li><strong>Fails safe.</strong> If a price download fails, the last good prices stay in use, so costs are never left without a price.</li>
+			<li><strong>Reviewed.</strong> Every release passes WordPress's official Plugin Check, a security review and 245 automated tests, on PHP 7.4 through PHP 8.3.</li>
+		</ul>
+
+		<h2 id="compliance">GDPR and compliance</h2>
+		<p>Gatehouse helps you meet your obligations as a data controller when your site uses AI.</p>
+		<ul>
+			<li><strong>Data minimisation:</strong> redaction keeps personal data out of requests to AI providers, and logs keep facts about calls, not their content.</li>
+			<li><strong>Right of access:</strong> <em>Tools → Export Personal Data</em> includes a person's AI requests.</li>
+			<li><strong>Right to erasure:</strong> <em>Tools → Erase Personal Data</em> anonymises them. Costs are kept so your budgets stay correct.</li>
+			<li><strong>Transparency:</strong> Gatehouse adds a suggested paragraph to <em>Settings → Privacy → Policy Guide</em> for your privacy policy.</li>
+			<li><strong>Storage limitation:</strong> automatic deletion after your chosen retention period.</li>
+		</ul>
+		<p>Gatehouse doesn't replace your agreement with your AI provider about how they handle the data you send. Read your provider's data processing terms.</p>
+
+		<h2 id="accessibility">Accessibility</h2>
+		<p>The Gatehouse dashboard is designed to meet <strong>WCAG 2.2 level AA</strong>.</p>
+		<ul>
+			<li>Every screen is checked automatically with axe-core, in light and dark mode, before each release: zero issues.</li>
+			<li>Everything works with the keyboard. Detail panels keep focus inside until you close them with <kbd>Esc</kbd>.</li>
+			<li>Every chart has a <strong>Table</strong> view for screen readers.</li>
+			<li>Status is shown with text and icons, never by colour alone.</li>
+			<li>Text meets AA contrast in both themes, and animations stop when your system asks for reduced motion.</li>
+		</ul>
+		<p>This website follows the same rules. If something doesn't work with your assistive technology, please tell us. We treat accessibility problems as bugs.</p>
+
+		<h2 id="external-services">External services</h2>
+		<p>Gatehouse can connect to <strong>one</strong> outside service, and only if you turn it on:</p>
+		<ul>
+			<li><strong>OpenRouter's public model list</strong> (<code>openrouter.ai/api/v1/models</code>), to keep model prices current. It's off until you turn on “Update prices automatically”. It's a plain daily download that sends no site address, user data, usage data or API keys. <a href="https://openrouter.ai/privacy" rel="noopener">OpenRouter privacy policy</a>.</li>
+		</ul>
+		<p>Gatehouse Pro additionally contacts Lemon Squeezy to activate and validate your license key, and our update server to check for new Pro versions. These requests send your license key and site address, and nothing about your AI traffic.</p>
+		<p>Your AI calls go only to the AI provider you connected, exactly as they would without Gatehouse.</p>
+
+		<h2 id="report">Reporting a problem</h2>
+		<p><strong>Security issues:</strong> please report them privately using <a href="https://github.com/george-stathopoulos/gatehouse/security/advisories/new">GitHub's private vulnerability reporting</a>, not in public. We'll respond as quickly as we can and credit you in the changelog if you'd like.</p>
+		<p><strong>Accessibility and other issues:</strong> open a topic on the <a href="https://wordpress.org/support/plugin/gatehouse/">support forum</a>.</p>
+	</div>
+</div>
+</main>
+<footer class="site-foot">
+	<div class="wrap">
+		<div class="foot-grid">
+			<div class="foot-about">
+				<a class="brand" href="../"><span class="mark"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2a7 7 0 0 0-7 7v8a1 1 0 0 0 1 1h3v-6a3 3 0 0 1 6 0v6h3a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7Zm0 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg></span>Gatehouse</a>
+				<p>Cost, budget and privacy control for every AI call your WordPress site makes. Free and open source (GPL).</p>
+			</div>
+			<div>
+				<h2>Product</h2>
+				<ul>
+					<li><a href="../index.html#features">Features</a></li>
+					<li><a href="../index.html#pricing">Pricing</a></li>
+					<li><a href="../pro/">Gatehouse Pro</a></li>
+					<li><a href="../changelog/">Changelog</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>Help</h2>
+				<ul>
+					<li><a href="../docs/">Help center</a></li>
+					<li><a href="../docs/getting-started/">Getting started</a></li>
+					<li><a href="../docs/faq/">FAQ</a></li>
+					<li><a href="../docs/troubleshooting/">Troubleshooting</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>More projects</h2>
+				<ul>
+					<li><a href="https://george-stathopoulos.github.io/helpdesk-hero/" title="WordPress support with diagnostics and password-free access">Helpdesk Hero</a></li>
+					<li><a href="https://george-stathopoulos.github.io/#projects">All projects</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>Trust</h2>
+				<ul>
+					<li><a href="../trust/#privacy">Privacy</a></li>
+					<li><a href="../trust/#security">Security</a></li>
+					<li><a href="../trust/#compliance">GDPR</a></li>
+					<li><a href="../trust/#accessibility">Accessibility</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="foot-bottom">
+			<span>Made with <span class="heart" role="img" aria-label="love">♥</span> by <a href="https://george-stathopoulos.github.io/">George Stathopoulos</a></span>
+			<span>Gatehouse 1.5.0 · This website uses no cookies and no tracking.</span>
+		</div>
+	</div>
+</footer>
+<script src="../assets/site.js?v=1.5.0" defer></script>
+</body>
+</html>

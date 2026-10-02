@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started · Gatehouse</title>
+<meta name="description" content="Install, run the two-minute setup guide, connect a provider and try demo data. Gatehouse help center.">
+<meta name="theme-color" content="#4a3aa7">
+<link rel="canonical" href="https://george-stathopoulos.github.io/gatehouse/docs/getting-started/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Gatehouse">
+<meta property="og:title" content="Getting started · Gatehouse">
+<meta property="og:description" content="Install, run the two-minute setup guide, connect a provider and try demo data. Gatehouse help center.">
+<meta property="og:url" content="https://george-stathopoulos.github.io/gatehouse/docs/getting-started/">
+<meta property="og:image" content="https://george-stathopoulos.github.io/gatehouse/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../../assets/icon-256.png">
+<link rel="stylesheet" href="../../assets/site.css?v=1.5.0">
+<script>try{var t=localStorage.getItem('gatehouse-site-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="../../assets/search-index.js?v=1.5.0" defer></script>
+</head>
+<body data-root="../../">
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+	<div class="wrap">
+		<a class="brand" href="../../"><span class="mark"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2a7 7 0 0 0-7 7v8a1 1 0 0 0 1 1h3v-6a3 3 0 0 1 6 0v6h3a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7Zm0 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg></span>Gatehouse</a>
+		<nav id="site-nav" class="nav" aria-label="Main">
+			<a href="../../index.html#features">Features</a>
+			<a href="../../index.html#how">How it works</a>
+			<a href="../../index.html#pricing">Pricing</a>
+			<a href="../../pro/">Pro</a>
+			<a href="../../trust/">Privacy & security</a>
+			<a href="../../docs/" aria-current="page">Help center</a>
+		</nav>
+		<div class="head-actions">
+			<button class="icon-btn" type="button" data-theme-toggle aria-label="Dark theme" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+			<a class="btn btn-primary btn-sm" href="../../downloads/gatehouse.zip" download><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg> Download free</a>
+			<button class="icon-btn menu-btn" type="button" data-menu-toggle aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+		</div>
+	</div>
+</header>
+<main id="main">
+<div class="wrap docs-layout">
+<aside class="docs-nav" aria-label="Help center">
+	<div class="search" data-search role="search">
+	<label class="sr" for="side-search">Search the help center</label>
+	<input id="side-search" type="search" placeholder="Search help…" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="side-search-results">
+	<ul class="search-results" id="side-search-results" role="listbox" aria-label="Search results" hidden></ul>
+	<p class="sr" role="status" aria-live="polite"></p>
+</div>
+	<details open>
+		<summary class="docs-nav-toggle">Browse all guides</summary>
+		<ul><li><a href="../">Help center home</a></li></ul>
+		<h2>Start here</h2><ul><li><a href="../getting-started/" aria-current="page">Getting started</a></li></ul>
+		<h2>Using Gatehouse</h2><ul><li><a href="../overview/">Overview</a></li><li><a href="../sources-and-budgets/">Sources and budgets</a></li><li><a href="../requests/">Requests</a></li><li><a href="../privacy/">Privacy and redaction</a></li><li><a href="../brand-brief/">Brand brief</a></li><li><a href="../settings/">Settings</a></li><li><a href="../pro/">Pro: response caching</a></li></ul>
+		<h2>Reference</h2><ul><li><a href="../costs-and-pricing/">How costs are calculated</a></li><li><a href="../data/">Your data</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../troubleshooting/">Troubleshooting</a></li><li><a href="../developers/">For developers</a></li></ul>
+	</details>
+</aside>
+<article class="doc">
+	<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Help center</a> › Getting started</nav>
+	<h1 id="getting-started">Getting started</h1>
+<h2 id="requirements">Requirements<a class="anchor" href="#requirements" aria-label="Link to this section">#</a></h2>
+<ul>
+<li><strong>WordPress 7.0 or later.</strong> Gatehouse relies on the AI Client that WordPress 7.0 added to core.</li>
+<li><strong>PHP 7.4 or later.</strong></li>
+<li><strong>An AI provider connected to WordPress,</strong> such as Anthropic, OpenAI or Google. Providers are installed as plugins (for example <em>AI Provider for Anthropic</em>) and connected under <strong>Settings → Connectors</strong>.</li>
+<li><strong>An administrator account.</strong> Only users who can manage options (administrators) can see Gatehouse or change its settings.</li>
+</ul>
+<h2 id="install">Install<a class="anchor" href="#install" aria-label="Link to this section">#</a></h2>
+<ol>
+<li>In WordPress, go to <strong>Plugins → Add New</strong>, search for <strong>Gatehouse</strong>, then click <strong>Install</strong> and <strong>Activate</strong>.
+<em>Or</em> upload <code>gatehouse.zip</code> under <strong>Plugins → Add New → Upload Plugin</strong>.</li>
+<li>A new <strong>Gatehouse</strong> item appears in the admin menu.</li>
+</ol>
+<p>There is nothing else to set up. Gatehouse starts watching AI calls as soon as it is active.</p>
+<h2 id="connect-an-ai-provider-if-you-havent-already">Connect an AI provider (if you haven't already)<a class="anchor" href="#connect-an-ai-provider-if-you-havent-already" aria-label="Link to this section">#</a></h2>
+<p>Gatehouse does not call AI itself and does not need its own API key. It works with the provider you connect to WordPress.</p>
+<ol>
+<li>Install a provider plugin, such as <em>AI Provider for Anthropic</em>, <em>AI Provider for OpenAI</em> or <em>AI Provider for Google</em>.</li>
+<li>Go to <strong>Settings → Connectors</strong> and add your API key.</li>
+</ol>
+<p>If no provider has an API key yet, the Overview shows a banner with a link to Connectors. See <a href="../troubleshooting/#a-banner-says-the-provider-is-not-connected">Troubleshooting</a>.</p>
+<h2 id="the-setup-guide">The setup guide<a class="anchor" href="#the-setup-guide" aria-label="Link to this section">#</a></h2>
+<p>After you activate Gatehouse, a short setup guide opens. It takes about two minutes:</p>
+<ol>
+<li><strong>Welcome:</strong> what Gatehouse does.</li>
+<li><strong>Connect an AI provider:</strong> shows each installed provider and whether it has an API key. If none does, it walks you through installing a provider plugin and adding the key, with buttons that open the right screens. Click <strong>Check again</strong> when you're done.</li>
+<li><strong>Approve plugins that use AI:</strong> shown only if your site uses the AI plugin's Connector Approval feature. See <a href="#connector-approval">Connector Approval</a>.</li>
+<li><strong>Protect your site:</strong> a monthly budget for the whole site, budget alert emails, and personal-data redaction.</li>
+<li><strong>Ready:</strong> go to your dashboard, or explore with demo data.</li>
+</ol>
+<figure data-zoom><img src="../../assets/img/setup-2.jpg" alt="The setup guide" width="1800" height="1125" loading="lazy" decoding="async"><figcaption>The setup guide</figcaption></figure>
+<p><strong>Skip setup</strong> closes the guide. You can reopen it any time from <strong>Help → Run the setup guide</strong>.</p>
+<h2 id="connector-approval">Connector Approval<a class="anchor" href="#connector-approval" aria-label="Link to this section">#</a></h2>
+<p>Some sites use the official <strong>AI</strong> plugin's <em>Connector Approval</em> feature. It requires an administrator to approve each plugin before that plugin can use AI. When it is on:</p>
+<ul>
+<li><strong>Calls from unapproved plugins are blocked.</strong> Gatehouse logs them as <strong>Blocked</strong>, with the note <em>&quot;Not approved in AI → Connector Approval&quot;</em>.</li>
+<li><strong>The Overview names the plugins waiting for approval,</strong> with a <strong>Review approvals</strong> button that opens <strong>Tools → Connector Approval</strong>.</li>
+<li><strong>Gatehouse itself never needs approval,</strong> because it never calls AI. If you see &quot;Gatehouse&quot; on the approval screen (versions before 1.2 could trigger this when checking providers), you can deny or ignore it.</li>
+</ul>
+<h2 id="your-first-day">Your first day<a class="anchor" href="#your-first-day" aria-label="Link to this section">#</a></h2>
+<p>Until a plugin or theme makes its first AI call, the Overview shows a short explanation and two buttons: <strong>Explore with demo data</strong> and <strong>Run the setup guide</strong>.</p>
+<figure data-zoom><img src="../../assets/img/first-run.jpg" alt="The Overview before any AI calls" width="1800" height="1125" loading="lazy" decoding="async"><figcaption>The Overview before any AI calls</figcaption></figure>
+<p>After the first call:</p>
+<ul>
+<li>the <strong><a href="../overview/">Overview</a></strong> fills with spend, charts and activity;</li>
+<li>the plugin appears on the <strong><a href="../sources-and-budgets/">Sources</a></strong> page;</li>
+<li>the call appears in the <strong><a href="../requests/">Requests</a></strong> log.</li>
+</ul>
+<h2 id="explore-with-demo-data">Explore with demo data<a class="anchor" href="#explore-with-demo-data" aria-label="Link to this section">#</a></h2>
+<p>Turn on the <strong>Demo data</strong> switch at the top right of Gatehouse, or click <strong>Explore with demo data</strong>. Gatehouse fills a separate sandbox with about two months of sample traffic from fictional plugins, so you can try every page.</p>
+<figure data-zoom><img src="../../assets/img/demo-mode.jpg" alt="Demo data" width="1800" height="1125" loading="lazy" decoding="async"><figcaption>Demo data</figcaption></figure>
+<ul>
+<li><strong>Your real data is safe.</strong> Demo data never mixes with your real log, budgets or settings, and real AI calls keep being controlled by your real settings.</li>
+<li><strong>The banner tells you where you are.</strong> While demo data is on, a banner says so on every page. Changes you make, such as budgets or a brief, are saved to the demo only.</li>
+<li><strong>Back to my data</strong> switches back. Your demo data is kept for next time.</li>
+<li><strong>Delete demo data</strong> removes the sandbox completely.</li>
+</ul>
+<p>Demo mode is per administrator: other administrators keep seeing real data.</p>
+<h2 id="help-inside-the-plugin">Help inside the plugin<a class="anchor" href="#help-inside-the-plugin" aria-label="Link to this section">#</a></h2>
+<p>Click <strong>Help</strong> at the top right of Gatehouse. You'll find:</p>
+<ul>
+<li>search across everything;</li>
+<li>quick actions: re-run setup, demo data, support;</li>
+<li>a guide for every page;</li>
+<li>answers to common questions and troubleshooting;</li>
+<li>a glossary.</li>
+</ul>
+<p>On each page, the <strong>?</strong> button next to the page title opens the help for that page. Throughout the dashboard, hover or click an <strong>ⓘ</strong> icon for a short explanation of a term or number.</p>
+<figure data-zoom><img src="../../assets/img/tooltip.jpg" alt="A tooltip" width="1800" height="1015" loading="lazy" decoding="async"><figcaption>A tooltip</figcaption></figure>
+<figure data-zoom><img src="../../assets/img/help.jpg" alt="The Help page" width="1248" height="1800" loading="lazy" decoding="async"><figcaption>The Help page</figcaption></figure>
+<h2 id="recommended-setup">Recommended setup<a class="anchor" href="#recommended-setup" aria-label="Link to this section">#</a></h2>
+<p>The setup guide covers the essentials. Afterwards:</p>
+<ol>
+<li><strong>Give heavy users their own budget.</strong> On <strong><a href="../sources-and-budgets/">Sources</a></strong>, open a plugin's <strong>Policy</strong> and set a monthly budget.</li>
+<li><strong>Review privacy.</strong> On <strong><a href="../privacy/">Privacy</a></strong>, add names or terms that must never reach an AI provider, and try the live tester.</li>
+<li><strong>Optional: write a brand brief.</strong> On <strong><a href="../brand-brief/">Brand brief</a></strong>, describe your voice and rules.</li>
+</ol>
+<h2 id="light-and-dark-mode">Light and dark mode<a class="anchor" href="#light-and-dark-mode" aria-label="Link to this section">#</a></h2>
+<p>The button at the top right of Gatehouse cycles between <strong>match system</strong>, <strong>light</strong> and <strong>dark</strong>. Your choice is remembered in your browser.</p>
+<figure data-zoom><img src="../../assets/img/overview-dark.jpg" alt="Gatehouse in dark mode" width="1800" height="1125" loading="lazy" decoding="async"><figcaption>Gatehouse in dark mode</figcaption></figure>
+<p>Gatehouse also works on phones and tablets. The menu scrolls sideways and cards stack:</p>
+<p>&lt;img src=&quot;images/mobile.png&quot; alt=&quot;Gatehouse on a phone&quot; width=&quot;320&quot;&gt;</p>
+
+	<div class="help-strip"><p><strong>Still stuck?</strong> Check <a href="../troubleshooting/">Troubleshooting</a> and the <a href="../faq/">FAQ</a>, or ask on the <a href="https://wordpress.org/support/plugin/gatehouse/">support forum</a>. Inside WordPress, click <strong>Help</strong> at the top right of Gatehouse.</p></div>
+	<nav class="pager" aria-label="Previous and next guide">
+		
+		<a class="next" href="../overview/"><small>Next</small>Overview</a>
+	</nav>
+</article>
+<nav class="on-page" aria-label="On this page" data-spy><h2>On this page</h2><ul><li><a href="#requirements">Requirements</a></li><li><a href="#install">Install</a></li><li><a href="#connect-an-ai-provider-if-you-havent-already">Connect an AI provider (if you haven't already)</a></li><li><a href="#the-setup-guide">The setup guide</a></li><li><a href="#connector-approval">Connector Approval</a></li><li><a href="#your-first-day">Your first day</a></li><li><a href="#explore-with-demo-data">Explore with demo data</a></li><li><a href="#help-inside-the-plugin">Help inside the plugin</a></li><li><a href="#recommended-setup">Recommended setup</a></li><li><a href="#light-and-dark-mode">Light and dark mode</a></li></ul></nav>
+</div>
+</main>
+<footer class="site-foot">
+	<div class="wrap">
+		<div class="foot-grid">
+			<div class="foot-about">
+				<a class="brand" href="../../"><span class="mark"><svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 2a7 7 0 0 0-7 7v8a1 1 0 0 0 1 1h3v-6a3 3 0 0 1 6 0v6h3a1 1 0 0 0 1-1V9a7 7 0 0 0-7-7Zm0 3.2a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg></span>Gatehouse</a>
+				<p>Cost, budget and privacy control for every AI call your WordPress site makes. Free and open source (GPL).</p>
+			</div>
+			<div>
+				<h2>Product</h2>
+				<ul>
+					<li><a href="../../index.html#features">Features</a></li>
+					<li><a href="../../index.html#pricing">Pricing</a></li>
+					<li><a href="../../pro/">Gatehouse Pro</a></li>
+					<li><a href="../../changelog/">Changelog</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>Help</h2>
+				<ul>
+					<li><a href="../../docs/">Help center</a></li>
+					<li><a href="../../docs/getting-started/">Getting started</a></li>
+					<li><a href="../../docs/faq/">FAQ</a></li>
+					<li><a href="../../docs/troubleshooting/">Troubleshooting</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>More projects</h2>
+				<ul>
+					<li><a href="https://george-stathopoulos.github.io/helpdesk-hero/" title="WordPress support with diagnostics and password-free access">Helpdesk Hero</a></li>
+					<li><a href="https://george-stathopoulos.github.io/#projects">All projects</a></li>
+				</ul>
+			</div>
+			<div>
+				<h2>Trust</h2>
+				<ul>
+					<li><a href="../../trust/#privacy">Privacy</a></li>
+					<li><a href="../../trust/#security">Security</a></li>
+					<li><a href="../../trust/#compliance">GDPR</a></li>
+					<li><a href="../../trust/#accessibility">Accessibility</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="foot-bottom">
+			<span>Made with <span class="heart" role="img" aria-label="love">♥</span> by <a href="https://george-stathopoulos.github.io/">George Stathopoulos</a></span>
+			<span>Gatehouse 1.5.0 · This website uses no cookies and no tracking.</span>
+		</div>
+	</div>
+</footer>
+<script src="../../assets/site.js?v=1.5.0" defer></script>
+</body>
+</html>
