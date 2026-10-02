@@ -1,0 +1,20 @@
+{
+  "name": "gatehouse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cost, privacy and policy control for every AI call your WordPress site makes.",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "build": "wp-scripts build src/index.js --output-path=build",
+    "start": "wp-scripts start src/index.js --output-path=build",
+    "lint:js": "wp-scripts lint-js src pro/src",
+    "build:pro": "wp-scripts build pro/src/index.js --output-path=pro/gatehouse-pro/build",
+    "build:all": "npm run build && npm run build:pro"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.0.0",
+    "axe-core": "^4.13.0",
+    "playwright-core": "^1.63.0",
+    "typescript": "^5.9.3"
+  }
+}
