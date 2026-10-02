@@ -71,7 +71,7 @@
 		},
 		{
 			"step": "wp-cli",
-			"command": "wp eval \"Gatehouse_Onboarding::complete();\""
+			"command": "wp eval \"Gatehouse_Onboarding::complete(); delete_transient( Gatehouse_Onboarding::REDIRECT );\""
 		},
 		{
 			"step": "wp-cli",
