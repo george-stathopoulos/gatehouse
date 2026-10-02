@@ -87,10 +87,11 @@
 <li>Choose the zip you downloaded and click <strong>Install Now</strong>.</li>
 <li>Click <strong>Activate Plugin</strong>.</li>
 </ol>
+<p><strong>Multisite:</strong> WebLLM's settings are per site. On each site that uses AI, open that site's <strong>Settings → WebLLM</strong>, choose a model and turn on the worker.</p>
 <h2 id="3-choose-a-model-and-turn-on-the-worker">3. Choose a model and turn on the worker<a class="anchor" href="#3-choose-a-model-and-turn-on-the-worker" aria-label="Link to this section">#</a></h2>
 <ol>
 <li>Go to <strong>Settings → WebLLM</strong>.</li>
-<li>Pick a <strong>Model</strong>. The list comes from WebLLM's catalogue, smallest first. Start with a small one (around 1 billion parameters); you can switch later.</li>
+<li>Pick a <strong>Model</strong>. The list comes from WebLLM's catalogue and shows each model's download size. <strong>Start with a small one, around 1 GB or less</strong> (for example a 0.5B–1B model such as Qwen2.5-0.5B-Instruct or Llama-3.2-1B-Instruct). The default, Qwen3.5-4B (about 3.8 GB), gives better answers but takes much longer to download and load, and needs a powerful computer. You can switch later.</li>
 <li>Turn on <strong>In-browser worker</strong>. Most plugins start their AI requests on your server; the worker lets an open dashboard tab answer them.</li>
 <li>Click <strong>Save Changes</strong>.</li>
 </ol>
@@ -105,6 +106,7 @@
 <h2 id="how-it-behaves">How it behaves<a class="anchor" href="#how-it-behaves" aria-label="Link to this section">#</a></h2>
 <ul>
 <li><strong>Keep a dashboard tab open</strong> while you use AI features. With no tab open, there's no browser to run the model, and requests wait and then time out.</li>
+<li><strong>Wait for “ready”.</strong> The model loads into each dashboard page you open (from the browser's cache after the first time). Calls made before it finishes fail with <em>No WebLLM worker is connected for model …</em>; try again once <strong>WebLLM worker: ready</strong> shows. Small models load in seconds.</li>
 <li><strong>No background AI.</strong> Scheduled tasks (cron) and WP-CLI have no browser, so AI calls that plugins make in the background fail while WebLLM is the provider. Gatehouse logs them as failed, so you can see which plugins do this.</li>
 <li><strong>Budgets and costs.</strong> Local calls cost $0, so they never use up a budget or show as unpriced. Pausing a plugin still stops its calls.</li>
 <li><strong>Speed depends on your computer.</strong> A laptop with a recent graphics chip answers a short brief in seconds; older machines take longer. Smaller models help.</li>
@@ -133,6 +135,10 @@
 <tr>
 <td>Gatehouse still says no provider is connected</td>
 <td>Check that the plugin is <strong>active</strong>, a model is saved, and <strong>In-browser worker</strong> is on. Then reload the Gatehouse screen.</td>
+</tr>
+<tr>
+<td><em>No WebLLM worker is connected for model …</em></td>
+<td>The model is still downloading or loading. Stay on the page until <strong>Settings → WebLLM</strong> shows <em>WebLLM worker: ready</em>, then retry. If it never gets there, choose a smaller model. On multisite, set up WebLLM on the site you're using.</td>
 </tr>
 <tr>
 <td>Requests time out</td>
