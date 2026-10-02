@@ -1,0 +1,81 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"meta": {
+		"title": "Gatehouse demo",
+		"author": "George Stathopoulos",
+		"description": "A shop with three months of AI calls from several plugins, budgets, redaction and caching."
+	},
+	"landingPage": "/wp-admin/admin.php?page=gatehouse",
+	"preferredVersions": {
+		"php": "8.3",
+		"wp": "latest"
+	},
+	"features": {
+		"networking": true
+	},
+	"login": true,
+	"steps": [
+		{
+			"step": "setSiteOptions",
+			"options": {
+				"blogname": "Northwind Coffee Roasters"
+			}
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "ai-provider-for-anthropic"
+			},
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "defineWpConfigConsts",
+			"consts": {
+				"ANTHROPIC_API_KEY": "sk-ant-demo-placeholder"
+			}
+		},
+		{
+			"step": "writeFile",
+			"path": "/wordpress/wp-content/mu-plugins/gatehouse-demo.php",
+			"data": {
+				"resource": "url",
+				"url": "https://george-stathopoulos.github.io/gatehouse/demo/gatehouse-demo.php.txt"
+			}
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "url",
+				"url": "https://george-stathopoulos.github.io/gatehouse/downloads/gatehouse.zip"
+			},
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "url",
+				"url": "https://george-stathopoulos.github.io/gatehouse/downloads/gatehouse-pro.zip"
+			},
+			"options": {
+				"activate": true
+			}
+		},
+		{
+			"step": "wp-cli",
+			"command": "wp gatehouse seed --days=95 --cache-days=12"
+		},
+		{
+			"step": "wp-cli",
+			"command": "wp eval \"Gatehouse_Onboarding::complete();\""
+		},
+		{
+			"step": "wp-cli",
+			"command": "wp eval \"Gatehouse_Pro_Cache::update_settings(array('sources'=>array('plugin:helpdesk-bot','plugin:form-guard'))); global $wpdb; foreach ( array( 'plugin:helpdesk-bot' => array( 'claude-haiku-4-5', 15 ), 'plugin:form-guard' => array( 'gpt-5-nano', 15 ) ) as $s => $m ) { for ( $i = 1; $i <= $m[1]; $i++ ) { $body = wp_json_encode( array( 'id' => 'msg_demo', 'content' => array( array( 'type' => 'text', 'text' => str_repeat( 'Sample cached answer. ', 40 ) ) ), 'usage' => array( 'input_tokens' => 1800, 'output_tokens' => 300 ) ) ); $wpdb->replace( Gatehouse_Pro_Cache::table(), array( 'cache_key' => hash( 'sha256', $s . $i ), 'source' => $s, 'model' => $m[0], 'response' => $body, 'bytes' => strlen( $body ), 'created_at' => gmdate( 'Y-m-d H:i:s' ), 'expires_at' => gmdate( 'Y-m-d H:i:s', time() + DAY_IN_SECONDS ), 'hits' => wp_rand( 1, 20 ) ) ); } }\""
+		}
+	]
+}

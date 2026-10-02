@@ -29,6 +29,7 @@
 			<a href="../../index.html#features">Features</a>
 			<a href="../../index.html#how">How it works</a>
 			<a href="../../index.html#pricing">Pricing</a>
+			<a href="../../demo/">Live demo</a>
 			<a href="../../pro/">Pro</a>
 			<a href="../../trust/">Privacy & security</a>
 			<a href="../../docs/" aria-current="page">Help center</a>
@@ -54,7 +55,7 @@
 		<ul><li><a href="../">Help center home</a></li></ul>
 		<h2>Start here</h2><ul><li><a href="../getting-started/">Getting started</a></li></ul>
 		<h2>Using Gatehouse</h2><ul><li><a href="../overview/">Overview</a></li><li><a href="../sources-and-budgets/">Sources and budgets</a></li><li><a href="../requests/">Requests</a></li><li><a href="../privacy/">Privacy and redaction</a></li><li><a href="../brand-brief/">Brand brief</a></li><li><a href="../settings/">Settings</a></li><li><a href="../pro/">Pro: response caching</a></li></ul>
-		<h2>Reference</h2><ul><li><a href="../costs-and-pricing/" aria-current="page">How costs are calculated</a></li><li><a href="../data/">Your data</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../troubleshooting/">Troubleshooting</a></li><li><a href="../developers/">For developers</a></li></ul>
+		<h2>Reference</h2><ul><li><a href="../costs-and-pricing/" aria-current="page">How costs are calculated</a></li><li><a href="../local-ai/">Private AI with WebLLM</a></li><li><a href="../data/">Your data</a></li><li><a href="../faq/">FAQ</a></li><li><a href="../troubleshooting/">Troubleshooting</a></li><li><a href="../developers/">For developers</a></li></ul>
 	</details>
 </aside>
 <article class="doc">
@@ -124,7 +125,7 @@
 <p>Turn on automatic price updates, or add the model's price yourself. Calls made before the model had a price stay at $0.</p>
 <h2 id="local-models-webllm">Local models (WebLLM)<a class="anchor" href="#local-models-webllm" aria-label="Link to this section">#</a></h2>
 <p><a href="https://github.com/ProgressPlanner/ai-provider-for-webllm" rel="noopener">AI Provider for WebLLM</a> runs a language model inside the browser (WebGPU): no API key, no cloud and no per-request bill. Gatehouse logs its calls like any other, with the plugin, model and tokens, at a cost of <strong>$0</strong>, so they never show as unpriced and never use up a budget.</p>
-<p>To use it, install and activate the plugin, choose a model under <strong>Settings → WebLLM</strong>, and turn on <strong>In-browser worker</strong>: AI calls that plugins start on the server are then answered by the model in an open dashboard tab. If the worker is off, the Overview tells you. Your site needs HTTPS (or <code>localhost</code>) and a browser with WebGPU.</p>
+<p>To set it up, follow <a href="../local-ai/">Private AI with WebLLM</a>: download, install, choose a model, turn on the in-browser worker and check it works.</p>
 <p>Developers can mark other local providers as free with the <code>gatehouse_local_providers</code> filter.</p>
 <h2 id="forecasts">Forecasts<a class="anchor" href="#forecasts" aria-label="Link to this section">#</a></h2>
 <p>The <strong>month-end forecast</strong> answers: if things carry on like the last week, where will spending end up this month?</p>
@@ -147,7 +148,7 @@
 	<div class="help-strip"><p><strong>Still stuck?</strong> Check <a href="../troubleshooting/">Troubleshooting</a> and the <a href="../faq/">FAQ</a>, or ask on the <a href="https://wordpress.org/support/plugin/gatehouse/">support forum</a>. Inside WordPress, click <strong>Help</strong> at the top right of Gatehouse.</p></div>
 	<nav class="pager" aria-label="Previous and next guide">
 		<a class="prev" href="../pro/"><small>Previous</small>Pro: response caching</a>
-		<a class="next" href="../data/"><small>Next</small>Your data</a>
+		<a class="next" href="../local-ai/"><small>Next</small>Private AI with WebLLM</a>
 	</nav>
 </article>
 <nav class="on-page" aria-label="On this page" data-spy><h2>On this page</h2><ul><li><a href="#the-formula">The formula</a></li><li><a href="#where-prices-come-from">Where prices come from</a></li><li><a href="#your-own-prices">Your own prices</a></li><li><a href="#models-without-a-price">Models without a price</a></li><li><a href="#local-models-webllm">Local models (WebLLM)</a></li><li><a href="#forecasts">Forecasts</a></li><li><a href="#budgets-and-months">Budgets and months</a></li></ul></nav>

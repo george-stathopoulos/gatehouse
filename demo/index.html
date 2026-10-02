@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Changelog · Gatehouse</title>
-<meta name="description" content="Release notes for every version of Gatehouse.">
+<title>Live demo · Gatehouse</title>
+<meta name="description" content="Try Gatehouse in your browser: three months of sample AI calls, budgets, redaction and caching, running on WordPress Playground.">
 <meta name="theme-color" content="#4a3aa7">
-<link rel="canonical" href="https://george-stathopoulos.github.io/gatehouse/changelog/">
+<link rel="canonical" href="https://george-stathopoulos.github.io/gatehouse/demo/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Gatehouse">
-<meta property="og:title" content="Changelog · Gatehouse">
-<meta property="og:description" content="Release notes for every version of Gatehouse.">
-<meta property="og:url" content="https://george-stathopoulos.github.io/gatehouse/changelog/">
+<meta property="og:title" content="Live demo · Gatehouse">
+<meta property="og:description" content="Try Gatehouse in your browser: three months of sample AI calls, budgets, redaction and caching, running on WordPress Playground.">
+<meta property="og:url" content="https://george-stathopoulos.github.io/gatehouse/demo/">
 <meta property="og:image" content="https://george-stathopoulos.github.io/gatehouse/assets/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
@@ -29,7 +29,7 @@
 			<a href="../index.html#features">Features</a>
 			<a href="../index.html#how">How it works</a>
 			<a href="../index.html#pricing">Pricing</a>
-			<a href="../demo/">Live demo</a>
+			<a href="../demo/" aria-current="page">Live demo</a>
 			<a href="../pro/">Pro</a>
 			<a href="../trust/">Privacy & security</a>
 			<a href="../docs/">Help center</a>
@@ -43,18 +43,67 @@
 </header>
 <main id="main">
 
-<section class="page-head"><div class="wrap"><span class="kicker">Changelog</span><h1>What's new</h1><p>Every Gatehouse release, newest first.</p></div></section>
-<div class="wrap" style="padding:64px 24px 120px">
-	<div class="prose">
-		<section class="release"><h2 id="v1-5-0">Version 1.5.0</h2><ul><li>New: works with AI Provider for WebLLM, which runs AI models privately in the browser, with a step-by-step setup guide. Its calls are logged at $0, and the dashboard suggests it when no provider is connected, or says when its in-browser worker is off.</li><li>New: the documentation is also in the plugin's GitHub repository.</li><li>The website links to the author's other projects.</li></ul></section>
-		<section class="release"><h2 id="v1-4-0">Version 1.4.0</h2><ul><li>AI Gateway is now Gatehouse. Same plugin, new name.</li><li>New: website with guides and the help center at https://george-stathopoulos.github.io/gatehouse/, linked from the dashboard footer.</li></ul></section>
-		<section class="release"><h2 id="v1-3-1">Version 1.3.1</h2><ul><li>New: personal data export and erasure through WordPress's privacy tools, and suggested privacy policy text.</li><li>Accessibility: stronger text contrast in light and dark mode, underlined links in text, and keyboard focus kept inside detail panels.</li></ul></section>
-		<section class="release"><h2 id="v1-3-0">Version 1.3.0</h2><ul><li>New: automatic model price updates, once a day, from OpenRouter's public model list (opt-in; offered in the setup guide and under Settings → Model prices). New models get a price within a day; your own edits always win; the built-in table remains the fallback.</li><li>New: &quot;Update now&quot;, live-price status and model search in the price table.</li><li>Fix: the price-table example now shows real model ids.</li></ul></section>
-		<section class="release"><h2 id="v1-2-0">Version 1.2.0</h2><ul><li>New: step-by-step setup guide on activation (provider, Connector Approval, budget and alerts).</li><li>New: Demo data switch, with sample data in a separate sandbox that never affects live data or settings.</li><li>New: Help page with guides, FAQ, troubleshooting and glossary, plus ⓘ tooltips throughout.</li><li>New: compatibility with the AI plugin's Connector Approval. Blocked calls are logged and waiting plugins are listed.</li><li>Fix: Gatehouse no longer triggers an approval request for itself. Provider status is read from configured keys, without calling the provider.</li></ul></section>
-		<section class="release"><h2 id="v1-1-0">Version 1.1.0</h2><ul><li>New: repeated-request detection. The Overview shows how many calls repeated an identical earlier request and what they cost, per plugin.</li><li>New: support for the optional Gatehouse Pro add-on (response caching). Cached calls are shown as &quot;From cache&quot; with the amount saved.</li><li>New: extension points for add-ons (<code>gatehouse_record_row</code> filter, <code>gatehouse_admin_enqueue</code> action, <code>gatehouse.routes</code> JavaScript filter).</li><li>Fix: toggle switches did not respond to mouse clicks.</li><li>The database table gains three columns; the upgrade runs automatically.</li></ul></section>
-		<section class="release"><h2 id="v1-0-0">Version 1.0.0</h2><ul><li>First release. Built-in model prices checked 2026-10-01.</li></ul></section>
+<section class="page-head">
+	<div class="wrap">
+		<span class="kicker">Live demo</span>
+		<h1>Gatehouse, live in your browser</h1>
+		<p>The demo runs on <a href="https://wordpress.org/playground/" rel="noopener">WordPress Playground</a>: a shop with three months of AI calls from several plugins, budgets, personal data redaction and Pro caching. It takes about a minute to start. Nothing is installed on your computer, nothing you do is saved, and no AI calls leave your browser.</p>
+		<div class="cta-row" style="justify-content:flex-start">
+			<a class="btn btn-primary" href="https://playground.wordpress.net/?blueprint-url=https%3A%2F%2Fgeorge-stathopoulos.github.io%2Fgatehouse%2Fdemo%2Fblueprint.json" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z"/></svg> Launch the demo</a>
+			<a class="btn btn-ghost" href="../docs/getting-started/">Read the guide instead</a>
+		</div>
+		<p class="hero-note" style="text-align:left">Opens playground.wordpress.net in a new tab. Works best in a desktop browser. Every Pro feature is switched on.</p>
 	</div>
-</div>
+</section>
+<section class="section" aria-labelledby="tour-title">
+	<div class="wrap">
+		<div class="section-head"><h2 id="tour-title">A five-minute tour</h2></div>
+		<div class="feature">
+			<div class="feature-text">
+				<span class="pill">1 · Overview</span>
+				<h3>Where the money goes</h3>
+				<p>Spend for the last 30 days by plugin, the month-end forecast, the site budget and anything that needs attention.</p>
+			</div>
+			<figure class="shot" data-zoom><img src="../assets/img/overview.jpg" width="1800" height="1125" alt="The Gatehouse overview in the demo." loading="lazy" decoding="async"></figure>
+		</div>
+		<div class="feature flip">
+			<div class="feature-text">
+				<span class="pill">2 · Sources and budgets</span>
+				<h3>Cap a plugin</h3>
+				<p>Open <strong>Sources</strong>, pick a plugin and give it a monthly budget, or pause its AI with one switch.</p>
+			</div>
+			<figure class="shot" data-zoom><img src="../assets/img/sources.jpg" width="1800" height="1125" alt="Sources with budgets in the demo." loading="lazy" decoding="async"></figure>
+		</div>
+		<div class="feature">
+			<div class="feature-text">
+				<span class="pill">3 · Requests</span>
+				<h3>Every call, in detail</h3>
+				<p>Filter the log and open a call to see its tokens, cost, timing and what redaction removed.</p>
+			</div>
+			<figure class="shot" data-zoom><img src="../assets/img/requests.jpg" width="1800" height="1125" alt="The Requests log in the demo." loading="lazy" decoding="async"></figure>
+		</div>
+		<div class="feature flip">
+			<div class="feature-text">
+				<span class="pill">4 · Privacy</span>
+				<h3>Try the redaction tester</h3>
+				<p>Under <strong>Privacy</strong>, type a message with an email or phone number and see exactly what the AI provider would receive.</p>
+			</div>
+			<figure class="shot" data-zoom><img src="../assets/img/privacy.jpg" width="1800" height="1423" alt="The Privacy page in the demo." loading="lazy" decoding="async"></figure>
+		</div>
+	</div>
+</section>
+<section class="section section-alt" aria-labelledby="demo-notes">
+	<div class="wrap">
+		<div class="section-head"><h2 id="demo-notes">About the demo</h2></div>
+		<div class="prose" style="margin:0 auto">
+			<ul>
+				<li>The calls are sample data. The demo blocks real requests to AI providers, so nothing you type is sent anywhere.</li>
+				<li>Prefer AI that never leaves your browser at all? See <a href="../docs/local-ai/">Private AI with WebLLM</a>.</li>
+				<li>Want to run it locally? The blueprint is at <a href="blueprint.json"><code>demo/blueprint.json</code></a>.</li>
+			</ul>
+		</div>
+	</div>
+</section>
 </main>
 <footer class="site-foot">
 	<div class="wrap">
