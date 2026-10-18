@@ -236,29 +236,35 @@
 			calc.querySelector( '[for="calc-runaway"] output' ).textContent =
 				runaway + ( runaway === 1 ? ' time' : ' times' ) + ' / year';
 
-			// Caching (Pro): repeats answered from cache, assuming 90% of repeats are cacheable.
+			// Caching (Pro): exact repeats answered from the cache, assuming 90% of them are cacheable.
+			const price = 19; // Starter, the cheapest plan with caching.
 			const cacheYear = spend * repeat * 0.9 * 12;
-			// Budgets (free): a runaway plugin typically burns about a month's spend in days; a cap stops it.
+			// Budgets (free), only when the visitor says a runaway incident happens: it would burn
+			// about a month's spend before anyone noticed; a cap stops it.
 			const runawayYear = spend * runaway;
-			const total = cacheYear + runawayYear;
 
-			calc.querySelector( '[data-out="total"]' ).textContent =
-				money( total );
 			calc.querySelector( '[data-out="cache"]' ).textContent =
 				money( cacheYear );
+			calc.querySelector( '[data-out="price"]' ).textContent =
+				money( price ) + ' / year';
+			calc.querySelector( '[data-out="payback"]' ).textContent =
+				cacheYear >= price
+					? 'Yes, at these numbers'
+					: 'No: the free plugin is enough';
 			calc.querySelector( '[data-out="runaway"]' ).textContent =
 				money( runawayYear );
-			const payback = cacheYear > 0 ? 79 / ( cacheYear / 12 ) : Infinity;
-			calc.querySelector( '[data-out="payback"]' ).textContent =
-				payback === Infinity
-					? 'Not needed at this volume'
-					: payback < 1
-					? 'Within the first month'
-					: payback > 12
-					? 'Free plugin is enough'
-					: 'About ' +
-					  Math.ceil( payback ) +
-					  ( Math.ceil( payback ) === 1 ? ' month' : ' months' );
+			calc.querySelector( '[data-runaway-row]' ).hidden = runaway === 0;
+
+			// Break-even: the monthly AI spend at which caching saves as much as Pro costs.
+			const perDollar = repeat * 0.9 * 12;
+			calc.querySelector( '[data-out="breakeven"]' ).textContent =
+				perDollar > 0
+					? 'Starter pays for itself above ' +
+					  money( price / perDollar ) +
+					  '/month of AI spend at a ' +
+					  Math.round( repeat * 100 ) +
+					  '% repeat rate.'
+					: 'With no repeated requests, caching saves nothing: the free plugin is enough.';
 		};
 		Object.keys( inputs ).forEach( function ( k ) {
 			inputs[ k ].addEventListener( 'input', update );
